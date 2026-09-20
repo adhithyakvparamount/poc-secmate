@@ -40,6 +40,8 @@ with cols[3]:
 st.subheader("Projects")
 
 for target in TARGET_DATA:
+    last_assessed = target.get("last") or target.get("updated_at") or "Not assessed yet"
+    next_assessment = target.get("next") or target.get("protected_window") or "On demand"
     left, right = st.columns([3, 2])
     with left:
         st.markdown(
@@ -47,8 +49,8 @@ for target in TARGET_DATA:
             <div class="target-card">
               <h3 style="margin:0">{target['name']}</h3>
               <p style="margin:.2rem 0;color:#5a6472">{target['surface']}</p>
-              <div>{chips(target['guides'])}</div>
-              <p style="margin:.7rem 0 0;color:#5a6472">Last assessed: <b>{target['last']}</b> · Next: <b>{target['next']}</b></p>
+              <div>{chips(target.get('guides', []))}</div>
+              <p style="margin:.7rem 0 0;color:#5a6472">Last assessed: <b>{last_assessed}</b> · Next: <b>{next_assessment}</b></p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -57,7 +59,7 @@ for target in TARGET_DATA:
         st.progress(target["rate"] / 100, text=f"Pass rate: {target['rate']}%")
         st.caption(f"Open findings: {target.get('high', 0)} high, {target.get('medium', 0)} medium")
         with st.expander("View weakest classes"):
-            for name, value in target["classes"].items():
+            for name, value in target.get("classes", {}).items():
                 st.progress(value / 100, text=f"{name}: {value}%")
 
 st.markdown(
