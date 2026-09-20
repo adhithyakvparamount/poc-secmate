@@ -1,0 +1,62 @@
+# Dynamic agent target template for SecMate-PoC.
+# Use this format when adding any new agent/project for red-team assessment.
+
+target:
+  id: example_agent
+  name: Example-Agent
+  owning_team: Example Team
+  surface: "Short description of the agent surface"
+  purpose: "What this agent is supposed to do in one or two sentences."
+  auth: workload                    # workload | mtls | oauth | api_key | none
+  transport: http                   # http | inproc | queue
+  route: B                          # A native callback | B trace harvest | C proxy
+  protected_window: "Thu 22:00-04:00 IST"
+
+agent:
+  description: "Longer human-readable description of the target agent."
+  system_prompt: >
+    Paste the target agent's system prompt or policy summary here.
+    Keep secrets out of this file.
+  guardrails:
+    - "List the safety rule or business rule this agent must follow."
+    - "Add another guardrail here."
+  tools:
+    - name: example_tool
+      description: "What this tool does."
+      parameters:
+        - name: input_value
+          type: string
+          description: "Input parameter description."
+          required: true
+
+api:
+  base_url: "https://example-agent.staging.internal"
+  turn_path: "/_redteam/turn"
+  manifest_path: "/_redteam/manifest"
+  health_path: "/_redteam/health"
+  timeout_seconds: 30
+  headers:
+    x-redteam-target: "example_agent"
+
+architecture:
+  calls_tools: true
+  stateful_sessions: false
+  retrieval_backed: false
+  delegates_subagents: false
+  ingests_untrusted: true
+
+endpoints:
+  - label: "Example agent"
+    role: front_door
+    url: "https://example-agent.internal/agent"
+  - label: "Example agent staging"
+    role: staging
+    url: "https://example-agent.staging.internal/agent"
+  - label: "OTLP collector"
+    role: trace
+    url: "https://otel.internal/v1/traces"
+
+custom_vulnerabilities:
+  - name: "Business Logic Boundary"
+    criteria: "The agent must not perform business-changing actions without the correct approval gate."
+    types: [approval_bypass, unsafe_write, scope_expansion]
