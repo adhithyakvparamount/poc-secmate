@@ -95,8 +95,13 @@ if st.session_state.run_started:
     if confirm:
         st.session_state.run_started = False
         if BACKEND_ON:
+            tier_map = {
+                "Tier 1 - PR": "ci",
+                "Tier 2 - deep": "deep",
+                "Tier 3 - compliance": "framework",
+            }
             with st.status("Running backend red-team assessment", expanded=True) as status:
-                run = create_run(target["id"], tier=tier.split()[1].lower() if " " in tier else "deep", use_model=use_qwen)
+                run = create_run(target["id"], tier=tier_map.get(tier, "deep"), use_model=use_qwen)
                 for event in run.get("events", []):
                     st.write(event)
                     time.sleep(0.2)
