@@ -1,0 +1,99 @@
+"""
+1_New_Assessment.py — Assessment configuration page.
+
+VISUAL MOCKUP NOTICE:
+The "Launch Assessment" button below only shows a confirmation message.
+Wire it to your existing backend's assessment-run entry point (the
+function that currently kicks off Red Team / Blue Team / VAPT logic).
+"""
+
+import streamlit as st
+from theme import apply_theme, sidebar_brand, COLORS, status_pill, logout_button
+from authcheck import require_auth
+
+st.set_page_config(page_title="SecMate — New Assessment", layout="wide")
+require_auth()
+apply_theme()
+sidebar_brand()
+logout_button()
+
+st.markdown("### New Assessment")
+st.markdown(
+    f"<div style='color:{COLORS['text_secondary']}; font-size:13.5px; margin-top:-8px; margin-bottom:20px;'>"
+    "Configure a target and launch a Red Team, Blue Team, or full VAPT run.</div>",
+    unsafe_allow_html=True,
+)
+
+col_form, col_preview = st.columns([1.4, 1])
+
+with col_form:
+    with st.container(border=True):
+        st.markdown('<div class="section-title">Target Configuration</div>', unsafe_allow_html=True)
+        target_name = st.text_input("Target name", placeholder="e.g. PolicyMate Agent v2.3")
+        target_endpoint = st.text_input("Target endpoint / API URL", placeholder="https://api.example.com/v1/chat")
+        auth_method = st.selectbox("Authentication", ["None", "API Key", "Bearer Token", "OAuth2"])
+        if auth_method != "None":
+            st.text_input("Credential", type="password", placeholder="••••••••••••")
+
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+    with st.container(border=True):
+        st.markdown('<div class="section-title">Model Configuration</div>', unsafe_allow_html=True)
+        model_provider = st.selectbox("Attacker model provider", ["Anthropic", "OpenAI", "Local / Custom"])
+        model_name = st.text_input("Model identifier", placeholder="e.g. claude-sonnet-4-6")
+        temperature = st.slider("Sampling temperature", 0.0, 1.0, 0.7, 0.05)
+
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+    with st.container(border=True):
+        st.markdown('<div class="section-title">Test Suite Selection</div>', unsafe_allow_html=True)
+        modules = st.multiselect(
+            "Assessment modules",
+            ["Red Team — Adversarial Prompting", "Blue Team — Response Evaluation", "VAPT — Rule-Based Evidence Analysis"],
+            default=["Red Team — Adversarial Prompting", "Blue Team — Response Evaluation", "VAPT — Rule-Based Evidence Analysis"],
+        )
+        iterations = st.slider("Iterations per technique", 1, 50, 10)
+        categories = st.multiselect(
+            "Technique categories",
+            ["Prompt Injection", "Jailbreak", "Data Exfiltration", "Role Confusion", "Policy Bypass", "Denial of Service"],
+            default=["Prompt Injection", "Jailbreak", "Policy Bypass"],
+        )
+
+    st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
+    launch = st.button("Launch Assessment", use_container_width=False)
+    if launch:
+        if not target_name or not target_endpoint:
+            st.error("Target name and endpoint are required.")
+        else:
+            st.success(f"Assessment queued for **{target_name}**. (Visual confirmation only — connect to backend to start a real run.)")
+
+with col_preview:
+    st.markdown('<div class="section-title">Run Summary</div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown(
+            f"""
+            <div style="font-size:13px; line-height:2;">
+                <div><span style="color:{COLORS['text_secondary']};">Target:</span>
+                    <span style="font-family:'JetBrains Mono',monospace;">{target_name or "—"}</span></div>
+                <div><span style="color:{COLORS['text_secondary']};">Endpoint:</span>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:12px;">{target_endpoint or "—"}</span></div>
+                <div><span style="color:{COLORS['text_secondary']};">Model:</span>
+                    <span style="font-family:'JetBrains Mono',monospace;">{model_name or "—"} ({model_provider})</span></div>
+                <div><span style="color:{COLORS['text_secondary']};">Iterations:</span> {iterations} per technique</div>
+                <div><span style="color:{COLORS['text_secondary']};">Modules:</span> {len(modules)} selected</div>
+                <div><span style="color:{COLORS['text_secondary']};">Categories:</span> {len(categories)} selected</div>
+                <div style="margin-top:8px;">Status: {status_pill("pending")}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('<div class="section-title">Estimated Scope</div>', unsafe_allow_html=True)
+        est_prompts = iterations * max(len(categories), 1)
+        st.markdown(
+            f"<span style='font-family:JetBrains Mono,monospace; font-size:22px;'>{est_prompts}</span>"
+            f"<span style='color:{COLORS['text_secondary']}; font-size:13px;'> adversarial prompts to generate</span>",
+            unsafe_allow_html=True,
+        )
