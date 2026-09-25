@@ -8,7 +8,7 @@ with a read from your existing VAPT analysis module's output.
 
 import streamlit as st
 from html import escape
-from theme import apply_theme, sidebar_brand, get_active_colors, SEVERITY_ORDER, logout_button
+from theme import apply_theme, sidebar_brand, get_active_colors, notification_center, SEVERITY_ORDER, logout_button
 from authcheck import require_auth
 
 st.set_page_config(page_title="SecMate — VAPT Findings", layout="wide")
@@ -17,6 +17,7 @@ COLORS = get_active_colors()
 apply_theme()
 sidebar_brand()
 logout_button()
+notification_center()
 
 st.markdown("### VAPT Findings")
 st.markdown(

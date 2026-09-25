@@ -8,7 +8,7 @@ session store).
 """
 
 import streamlit as st
-from theme import apply_theme, sidebar_brand, get_active_colors, THEME_PRESETS, logout_button
+from theme import apply_theme, sidebar_brand, get_active_colors, notification_center, THEME_PRESETS, logout_button
 from authcheck import require_auth
 
 st.set_page_config(page_title="SecMate — Settings", layout="wide")
@@ -17,6 +17,7 @@ COLORS = get_active_colors()
 apply_theme()
 sidebar_brand()
 logout_button()
+notification_center()
 
 st.markdown("### Settings")
 st.markdown(

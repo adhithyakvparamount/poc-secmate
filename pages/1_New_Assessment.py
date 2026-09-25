@@ -8,7 +8,7 @@ function that currently kicks off Red Team / Blue Team / VAPT logic).
 """
 
 import streamlit as st
-from theme import apply_theme, sidebar_brand, get_active_colors, status_pill, logout_button
+from theme import add_notification, apply_theme, sidebar_brand, get_active_colors, notification_center, status_pill, logout_button
 from authcheck import require_auth
 from assessment_runner import run_assessment
 
@@ -18,6 +18,7 @@ COLORS = get_active_colors()
 apply_theme()
 sidebar_brand()
 logout_button()
+notification_center()
 
 st.markdown("### New Assessment")
 st.markdown(
@@ -89,6 +90,24 @@ with col_form:
                 result = run_assessment(config)
             st.session_state.latest_assessment = result
             st.session_state.assessment_history = [result] + st.session_state.get("assessment_history", [])
+            critical_count = sum(finding.get("severity") == "critical" for finding in result["findings"])
+            finding_count = len(result["findings"])
+            if critical_count:
+                notification_title = "Critical findings detected"
+                notification_level = "critical"
+            elif finding_count:
+                notification_title = "Assessment findings ready"
+                notification_level = "warning"
+            else:
+                notification_title = "Assessment completed"
+                notification_level = "success"
+            add_notification(
+                notification_title,
+                f"{target_name}: {len(result['exchanges'])} tests completed with {finding_count} findings.",
+                level=notification_level,
+                notification_id=f"assessment-{result['run_id']}",
+            )
+            st.toast(notification_title, icon=":material/notifications:")
             st.success(f"Assessment completed for **{target_name}** with {len(result['exchanges'])} tests and {len(result['findings'])} findings.")
             c_results, c_findings = st.columns(2)
             with c_results:

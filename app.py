@@ -22,7 +22,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import time
 
-from theme import apply_theme, sidebar_brand, get_active_colors, metric_card, status_pill, logout_button
+from theme import apply_theme, sidebar_brand, get_active_colors, metric_card, notification_center, status_pill, logout_button
 from login_screen import render_login_screen
 
 st.set_page_config(page_title="SecMate", layout="wide", initial_sidebar_state="expanded")
@@ -198,6 +198,7 @@ st.sidebar.markdown("<div style='padding:0 16px;'>", unsafe_allow_html=True)
 st.sidebar.selectbox("Environment", ["Staging", "Production", "Local"], key="env_select")
 st.sidebar.markdown("</div>", unsafe_allow_html=True)
 logout_button()
+notification_center()
 
 # ---------------------------------------------------------------------------
 # MOCK DATA — replace with backend calls
@@ -228,6 +229,7 @@ def get_recent_runs():
 def render_dashboard_header():
     user_type = st.session_state.get("onboarding_user_type", "Security Analyst")
     use_case = st.session_state.get("onboarding_use_case", "Testing an internal AI agent")
+    unread_count = sum(bool(item.get("unread")) for item in st.session_state.get("notifications", []))
     st.markdown(
         f"""
         <div style="display:flex; justify-content:space-between; gap:18px; align-items:center; margin-bottom:20px;">
@@ -239,10 +241,6 @@ def render_dashboard_header():
             <div style="display:flex; align-items:center; gap:10px;">
                 <div style="border:1px solid {COLORS['border']}; background:{COLORS['surface']}; border-radius:10px; padding:9px 12px; min-width:260px; color:{COLORS['text_secondary']}; font-size:13px;">
                     Search targets, reports, findings...
-                </div>
-                <div style="border:1px solid {COLORS['border']}; background:{COLORS['surface']}; border-radius:10px; padding:9px 11px; color:{COLORS['text_primary']}; position:relative;">
-                    <span style="position:absolute; top:6px; right:7px; width:7px; height:7px; border-radius:50%; background:{COLORS['critical']};"></span>
-                    Alerts
                 </div>
             </div>
         </div>
@@ -256,7 +254,7 @@ def render_dashboard_header():
             st.switch_page("pages/1_New_Assessment.py")
     with status_col:
         st.markdown(
-            f"<div style='color:{COLORS['text_secondary']}; font-size:12.5px; padding-top:8px;'>Workspace health: <span style='color:{COLORS['accent']};'>ready</span> · 1 assessment running · 2 critical alerts need review</div>",
+            f"<div style='color:{COLORS['text_secondary']}; font-size:12.5px; padding-top:8px;'>Workspace health: <span style='color:{COLORS['accent']};'>ready</span> · {unread_count} unread notifications</div>",
             unsafe_allow_html=True,
         )
 

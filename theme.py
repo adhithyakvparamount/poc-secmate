@@ -13,6 +13,9 @@ Usage in any page:
     apply_theme()
 """
 
+from datetime import datetime
+from html import escape
+
 import streamlit as st
 
 # ---------------------------------------------------------------------------
@@ -417,6 +420,43 @@ def apply_theme():
             border-color: {active['border']};
         }}
 
+        /* ---- Notification center ---- */
+        [data-testid="stPopover"] > button {{
+            background: {active['surface']} !important;
+            color: {active['text_primary']} !important;
+            border: 1px solid {active['border']} !important;
+            border-radius: 10px !important;
+        }}
+        [data-testid="stPopover"] > button:hover {{
+            background: {active['elevated']} !important;
+            border-color: {active['accent']} !important;
+        }}
+        .notification-item {{
+            background: {active['elevated']};
+            border: 1px solid {active['border']};
+            border-left: 3px solid var(--notification-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }}
+        .notification-title {{
+            color: {active['text_primary']};
+            font-size: 13px;
+            font-weight: 700;
+        }}
+        .notification-message {{
+            color: {active['text_secondary']};
+            font-size: 12px;
+            line-height: 1.45;
+            margin-top: 3px;
+        }}
+        .notification-time {{
+            color: {active['text_secondary']};
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10.5px;
+            margin-top: 6px;
+        }}
+
         /* ---- Misc cleanup ---- */
         #MainMenu {{visibility: hidden;}}
         footer {{visibility: hidden;}}
@@ -478,6 +518,83 @@ def sidebar_brand():
         st.button("Get help", use_container_width=True)
 
 
+def add_notification(title: str, message: str, level: str = "info", notification_id: str | None = None):
+    """Add one unread session notification, avoiding duplicate IDs."""
+    notifications = st.session_state.setdefault("notifications", [])
+    item_id = notification_id or f"notification-{datetime.now().timestamp()}"
+    if any(item.get("id") == item_id for item in notifications):
+        return
+    notifications.insert(
+        0,
+        {
+            "id": item_id,
+            "title": title,
+            "message": message,
+            "level": level,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "unread": True,
+        },
+    )
+    del notifications[20:]
+
+
+def notification_center():
+    """Render the session notification popover at the top-right of a page."""
+    if not st.session_state.get("notification_center_initialized"):
+        add_notification(
+            "Notification center ready",
+            "Assessment completions and new findings will appear here.",
+            notification_id="notification-center-ready",
+        )
+        st.session_state.notification_center_initialized = True
+
+    notifications = st.session_state.get("notifications", [])
+    unread_count = sum(bool(item.get("unread")) for item in notifications)
+    _, notification_col = st.columns([0.82, 0.18])
+    with notification_col:
+        label = f"Notifications ({unread_count})" if unread_count else "Notifications"
+        with st.popover(
+            label,
+            icon=":material/notifications:",
+            width="stretch",
+            key="notification_center_popover",
+        ):
+            st.markdown("#### Notifications")
+            if not notifications:
+                st.caption("No notifications yet.")
+            else:
+                level_colors = {
+                    "critical": COLORS["critical"],
+                    "warning": COLORS["high"],
+                    "success": get_active_colors()["accent"],
+                    "info": COLORS["low"],
+                }
+                for item in notifications:
+                    unread_marker = "New - " if item.get("unread") else ""
+                    color = level_colors.get(str(item.get("level")), COLORS["info"])
+                    st.markdown(
+                        f"""
+                        <div class="notification-item" style="--notification-color:{color};">
+                            <div class="notification-title">{unread_marker}{escape(str(item.get('title', 'Notification')))}</div>
+                            <div class="notification-message">{escape(str(item.get('message', '')))}</div>
+                            <div class="notification-time">{escape(str(item.get('created_at', '')))}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                mark_col, clear_col = st.columns(2)
+                with mark_col:
+                    if st.button("Mark all read", use_container_width=True, key="notifications_mark_read"):
+                        for item in notifications:
+                            item["unread"] = False
+                        st.rerun()
+                with clear_col:
+                    if st.button("Clear", use_container_width=True, key="notifications_clear"):
+                        st.session_state.notifications = []
+                        st.rerun()
+
+
 def metric_card(label: str, value: str, delta: str = None, delta_positive: bool = True):
     """Render a single metric card. `value` is pre-formatted (e.g. '128', '94%')."""
     delta_html = ""
@@ -516,4 +633,6 @@ def logout_button():
         st.session_state.authenticated = False
         st.session_state.onboarding_seen = False
         st.session_state.onboarding_loading = False
+        st.session_state.pop("notifications", None)
+        st.session_state.pop("notification_center_initialized", None)
         st.switch_page("app.py")
