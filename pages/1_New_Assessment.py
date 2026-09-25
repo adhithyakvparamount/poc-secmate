@@ -10,6 +10,7 @@ function that currently kicks off Red Team / Blue Team / VAPT logic).
 import streamlit as st
 from theme import apply_theme, sidebar_brand, COLORS, status_pill, logout_button
 from authcheck import require_auth
+from assessment_runner import run_assessment
 
 st.set_page_config(page_title="SecMate — New Assessment", layout="wide")
 require_auth()
@@ -32,8 +33,9 @@ with col_form:
         target_name = st.text_input("Target name", placeholder="e.g. PolicyMate Agent v2.3")
         target_endpoint = st.text_input("Target endpoint / API URL", placeholder="https://api.example.com/v1/chat")
         auth_method = st.selectbox("Authentication", ["None", "API Key", "Bearer Token", "OAuth2"])
+        credential = ""
         if auth_method != "None":
-            st.text_input("Credential", type="password", placeholder="••••••••••••")
+            credential = st.text_input("Credential", type="password", placeholder="••••••••••••")
 
     st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
@@ -58,14 +60,42 @@ with col_form:
             ["Prompt Injection", "Jailbreak", "Data Exfiltration", "Role Confusion", "Policy Bypass", "Denial of Service"],
             default=["Prompt Injection", "Jailbreak", "Policy Bypass"],
         )
+        authorized = st.checkbox("I confirm I am authorized to test this target endpoint.")
 
     st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
     launch = st.button("Launch Assessment", use_container_width=False)
     if launch:
         if not target_name or not target_endpoint:
             st.error("Target name and endpoint are required.")
+        elif not authorized:
+            st.error("Confirm that you are authorized to test this target before launching.")
+        elif not categories:
+            st.error("Select at least one technique category.")
         else:
-            st.success(f"Assessment queued for **{target_name}**. (Visual confirmation only — connect to backend to start a real run.)")
+            config = {
+                "target_name": target_name,
+                "target_endpoint": target_endpoint,
+                "auth_method": auth_method,
+                "credential": credential,
+                "model_provider": model_provider,
+                "model_name": model_name,
+                "temperature": temperature,
+                "modules": modules,
+                "iterations": iterations,
+                "categories": categories,
+            }
+            with st.spinner("Running red-team assessment against target endpoint..."):
+                result = run_assessment(config)
+            st.session_state.latest_assessment = result
+            st.session_state.assessment_history = [result] + st.session_state.get("assessment_history", [])
+            st.success(f"Assessment completed for **{target_name}** with {len(result['exchanges'])} tests and {len(result['findings'])} findings.")
+            c_results, c_findings = st.columns(2)
+            with c_results:
+                if st.button("View Red / Blue Results", use_container_width=True):
+                    st.switch_page("pages/2_Red_Blue_Team.py")
+            with c_findings:
+                if st.button("View Findings", use_container_width=True):
+                    st.switch_page("pages/3_VAPT_Findings.py")
 
 with col_preview:
     st.markdown('<div class="section-title">Run Summary</div>', unsafe_allow_html=True)

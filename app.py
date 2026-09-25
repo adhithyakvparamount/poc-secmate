@@ -20,6 +20,7 @@ Nothing in this file implements assessment logic.
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import time
 
 from theme import apply_theme, sidebar_brand, COLORS, metric_card, status_pill, logout_button
 from login_screen import render_login_screen
@@ -33,7 +34,162 @@ if not st.session_state.authenticated:
     render_login_screen()
     st.stop()
 
+
+def get_onboarding_steps():
+    return [
+        {"label": "Connect your target", "description": "Add the AI agent endpoint and the auth method SecMate should use."},
+        {"label": "Pick security coverage", "description": "Choose Red Team, Blue Team, and VAPT checks for your first run."},
+        {"label": "Review live findings", "description": "Track severity, exploit evidence, and guardrail behavior in one view."},
+        {"label": "Export the report", "description": "Generate a stakeholder-ready report after validation is complete."},
+    ]
+
+
+def render_onboarding_loading():
+    st.markdown(
+        f"""
+        <style>
+        section[data-testid="stSidebar"] {{ display: none; }}
+        .stApp {{ background: radial-gradient(circle at center, {COLORS['surface']} 0%, {COLORS['canvas']} 62%); }}
+        .block-container {{ max-width: 760px; padding-top: 22vh; }}
+        .scale-loader {{
+            width: 78px;
+            height: 78px;
+            margin: 0 auto 24px auto;
+            border-radius: 22px;
+            background: linear-gradient(135deg, {COLORS['accent']}, {COLORS['low']});
+            animation: scalePulse 1.05s ease-in-out infinite;
+            box-shadow: 0 0 42px rgba(0,217,163,0.28);
+        }}
+        @keyframes scalePulse {{
+            0%, 100% {{ transform: scale(0.86); opacity: 0.72; }}
+            50% {{ transform: scale(1.12); opacity: 1; }}
+        }}
+        .loading-title {{ text-align:center; color:{COLORS['text_primary']}; font-size:24px; font-weight:700; }}
+        .loading-sub {{ text-align:center; color:{COLORS['text_secondary']}; font-size:13px; margin-top:8px; }}
+        </style>
+        <div class="scale-loader"></div>
+        <div class="loading-title">Preparing your SecMate workspace</div>
+        <div class="loading-sub">Loading onboarding, profile, and assessment defaults.</div>
+        """,
+        unsafe_allow_html=True,
+    )
+    time.sleep(1.15)
+    st.session_state.onboarding_loading = False
+    st.rerun()
+
+
+def render_onboarding_page():
+    st.markdown(
+        f"""
+        <style>
+        section[data-testid="stSidebar"] {{ display: none; }}
+        .stApp {{ background: radial-gradient(900px 520px at 28% 10%, rgba(0,217,163,0.11), transparent 62%), {COLORS['canvas']}; }}
+        .block-container {{ max-width: 1120px; padding-top: 3.5rem; }}
+        .onboarding-hero {{
+            border: 1px solid {COLORS['border']};
+            border-radius: 22px;
+            padding: 34px;
+            background: linear-gradient(135deg, rgba(28,35,51,0.92), rgba(17,24,39,0.78));
+        }}
+        .onboarding-kicker {{ color:{COLORS['accent']}; font-family:'JetBrains Mono',monospace; font-size:12px; margin-bottom:10px; }}
+        .onboarding-title {{ color:{COLORS['text_primary']}; font-size:38px; font-weight:800; line-height:1.12; max-width:700px; }}
+        .onboarding-copy {{ color:{COLORS['text_secondary']}; font-size:15px; line-height:1.7; max-width:680px; margin-top:14px; }}
+        .onboarding-step {{
+            border: 1px solid {COLORS['border']};
+            border-radius: 14px;
+            padding: 16px;
+            background: rgba(255,255,255,0.018);
+            min-height: 132px;
+        }}
+        .onboarding-number {{
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(0,217,163,0.13);
+            color: {COLORS['accent']};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family:'JetBrains Mono',monospace;
+            font-size:12px;
+            font-weight:700;
+            margin-bottom: 12px;
+        }}
+        </style>
+        <div class="onboarding-hero">
+            <div class="onboarding-kicker">SECURITY WORKSPACE SETUP</div>
+            <div class="onboarding-title">Set up your first AI security assessment.</div>
+            <div class="onboarding-copy">Before opening the dashboard, SecMate walks you through the core workflow: connect a target, select security coverage, review findings, and export an assessment report.</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("<div style='height:22px;'></div>", unsafe_allow_html=True)
+    cols = st.columns(4)
+    for index, (col, step) in enumerate(zip(cols, get_onboarding_steps()), start=1):
+        col.markdown(
+            f"""
+            <div class="onboarding-step">
+                <div class="onboarding-number">0{index}</div>
+                <div style="color:{COLORS['text_primary']}; font-weight:700; font-size:14px; margin-bottom:8px;">{step['label']}</div>
+                <div style="color:{COLORS['text_secondary']}; font-size:12.8px; line-height:1.5;">{step['description']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('<div class="section-title">Tell us about your use case</div>', unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        with c1:
+            st.selectbox(
+                "Which best describes you?",
+                ["Student", "Engineer", "Working Professional", "Security Analyst", "Founder / Product Owner", "Other"],
+                key="onboarding_user_type",
+            )
+        with c2:
+            st.selectbox(
+                "What will you use SecMate for?",
+                [
+                    "Learning AI security",
+                    "Testing an internal AI agent",
+                    "Client security assessments",
+                    "Compliance and audit reports",
+                    "Research and experimentation",
+                    "Production monitoring",
+                ],
+                key="onboarding_use_case",
+            )
+        st.text_area(
+            "Anything specific you want SecMate to help with?",
+            placeholder="Example: test prompt injection risks before deploying a customer support bot.",
+            key="onboarding_goal",
+        )
+
+    st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
+    c1, c2 = st.columns([0.22, 1])
+    with c1:
+        if st.button("Enter Dashboard", use_container_width=True):
+            st.session_state.onboarding_seen = True
+            st.rerun()
+    with c2:
+        st.markdown(
+            f"<div style='color:{COLORS['text_secondary']}; font-size:12.5px; padding-top:9px;'>You can change theme, profile, and assessment defaults from the account settings later.</div>",
+            unsafe_allow_html=True,
+        )
+
+
 apply_theme()
+
+if not st.session_state.get("onboarding_seen", False):
+    if st.session_state.get("onboarding_loading", False):
+        render_onboarding_loading()
+    else:
+        render_onboarding_page()
+    st.stop()
+
 sidebar_brand()
 
 # Optional: environment/target context selector, purely visual here
@@ -68,15 +224,107 @@ def get_recent_runs():
     ])
 
 
+def render_dashboard_header():
+    user_type = st.session_state.get("onboarding_user_type", "Security Analyst")
+    use_case = st.session_state.get("onboarding_use_case", "Testing an internal AI agent")
+    st.markdown(
+        f"""
+        <div style="display:flex; justify-content:space-between; gap:18px; align-items:center; margin-bottom:20px;">
+            <div>
+                <div style="color:{COLORS['text_secondary']}; font-family:'JetBrains Mono',monospace; font-size:12px; margin-bottom:5px;">{user_type} workspace</div>
+                <div style="color:{COLORS['text_primary']}; font-size:26px; font-weight:750; letter-spacing:-0.02em;">Dashboard</div>
+                <div style="color:{COLORS['text_secondary']}; font-size:13px; margin-top:4px;">Optimized for: {use_case}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="border:1px solid {COLORS['border']}; background:{COLORS['surface']}; border-radius:10px; padding:9px 12px; min-width:260px; color:{COLORS['text_secondary']}; font-size:13px;">
+                    Search targets, reports, findings...
+                </div>
+                <div style="border:1px solid {COLORS['border']}; background:{COLORS['surface']}; border-radius:10px; padding:9px 11px; color:{COLORS['text_primary']}; position:relative;">
+                    <span style="position:absolute; top:6px; right:7px; width:7px; height:7px; border-radius:50%; background:{COLORS['critical']};"></span>
+                    Alerts
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    action_col, status_col = st.columns([0.17, 1])
+    with action_col:
+        if st.button("New Assessment", use_container_width=True):
+            st.switch_page("pages/1_New_Assessment.py")
+    with status_col:
+        st.markdown(
+            f"<div style='color:{COLORS['text_secondary']}; font-size:12.5px; padding-top:8px;'>Workspace health: <span style='color:{COLORS['accent']};'>ready</span> · 1 assessment running · 2 critical alerts need review</div>",
+            unsafe_allow_html=True,
+        )
+
+
+def render_quick_start_panel():
+    st.markdown('<div class="section-title">Quick Start</div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        left, right = st.columns([1.2, 1])
+        with left:
+            st.markdown(
+                f"""
+                <div style="font-size:18px; font-weight:700; color:{COLORS['text_primary']}; margin-bottom:6px;">Improve your first assessment run</div>
+                <div style="color:{COLORS['text_secondary']}; font-size:13px; line-height:1.6; max-width:620px;">
+                    Use this checklist to move from setup to a useful security report. Your existing dashboard below still shows live metrics, severity distribution, and recent runs.
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+            checklist = [
+                ("Connect production-like target", "Use staging or a safe replica before testing live users."),
+                ("Enable critical alerts", "Get notified when jailbreak or data exposure risks appear."),
+                ("Generate executive report", "Summarize risk, evidence, and remediation for stakeholders."),
+            ]
+            for title, description in checklist:
+                st.markdown(
+                    f"""
+                    <div style="display:flex; gap:10px; margin-bottom:10px; align-items:flex-start;">
+                        <div style="width:18px; height:18px; border-radius:50%; background:rgba(0,217,163,0.14); color:{COLORS['accent']}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">✓</div>
+                        <div>
+                            <div style="color:{COLORS['text_primary']}; font-size:13.5px; font-weight:600;">{title}</div>
+                            <div style="color:{COLORS['text_secondary']}; font-size:12.5px; margin-top:2px;">{description}</div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+        with right:
+            st.markdown(
+                f"""
+                <div style="border:1px solid {COLORS['border']}; border-radius:12px; padding:16px; background:rgba(255,255,255,0.018);">
+                    <div style="color:{COLORS['text_secondary']}; font-size:12px; margin-bottom:8px;">Recommended next action</div>
+                    <div style="color:{COLORS['text_primary']}; font-size:17px; font-weight:700; margin-bottom:8px;">Review critical findings</div>
+                    <div style="color:{COLORS['text_secondary']}; font-size:12.8px; line-height:1.55; margin-bottom:14px;">There are 6 open critical findings. Prioritize evidence review before exporting a report.</div>
+                    <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:12px; color:{COLORS['text_secondary']};">
+                        <span>Risk score</span><span style="color:{COLORS['critical']};">High</span>
+                    </div>
+                    <div style="height:8px; border-radius:999px; background:{COLORS['elevated']}; margin-top:8px; overflow:hidden;">
+                        <div style="width:72%; height:100%; background:linear-gradient(90deg,{COLORS['high']},{COLORS['critical']});"></div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+
 # ---------------------------------------------------------------------------
 # Page content
 # ---------------------------------------------------------------------------
-st.markdown("### Dashboard")
+render_dashboard_header()
 st.markdown(
     f"<div style='color:{COLORS['text_secondary']}; font-size:13.5px; margin-top:-8px; margin-bottom:20px;'>"
     "Overview of assessment activity across your monitored targets.</div>",
     unsafe_allow_html=True,
 )
+
+render_quick_start_panel()
+
+st.markdown("<div style='height:22px;'></div>", unsafe_allow_html=True)
 
 metrics = get_summary_metrics()
 c1, c2, c3, c4 = st.columns(4)

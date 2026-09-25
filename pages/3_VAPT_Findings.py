@@ -7,6 +7,7 @@ with a read from your existing VAPT analysis module's output.
 """
 
 import streamlit as st
+from html import escape
 from theme import apply_theme, sidebar_brand, COLORS, SEVERITY_ORDER, logout_button
 from authcheck import require_auth
 
@@ -28,6 +29,12 @@ st.markdown(
 # MOCK DATA — replace with backend calls
 # ---------------------------------------------------------------------------
 def get_findings():
+    history = st.session_state.get("assessment_history", [])
+    real_findings = []
+    for run in history:
+        real_findings.extend(run.get("findings", []))
+    if real_findings:
+        return real_findings
     return [
         {"id": "VAPT-0142", "title": "System prompt fragment disclosed under injection", "severity": "critical",
          "category": "Prompt Injection", "target": "Support Bot v1.8", "status": "open",
@@ -53,6 +60,9 @@ def get_findings():
 
 
 findings = get_findings()
+has_real_findings = bool(st.session_state.get("assessment_history"))
+if has_real_findings:
+    st.info("Showing findings generated from launched red-team assessments in this session.")
 
 # --- Filters ---
 f1, f2, f3 = st.columns([1, 1, 1])
@@ -61,7 +71,8 @@ with f1:
 with f2:
     status_filter = st.multiselect("Status", ["open", "acknowledged", "resolved"], default=["open", "acknowledged", "resolved"])
 with f3:
-    target_filter = st.multiselect("Target", sorted({f["target"] for f in findings}), default=sorted({f["target"] for f in findings}))
+    targets = sorted({f["target"] for f in findings})
+    target_filter = st.multiselect("Target", targets, default=targets)
 
 st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
@@ -80,12 +91,12 @@ for f in visible:
             <div class="finding-row" style="--sev-color:{sev_hex[f['severity']]};">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <span class="badge badge-{f['severity']}">{f['severity'].upper()}</span>
-                        <span class="finding-title" style="margin-left:8px;">{f['title']}</span>
+                        <span class="badge badge-{f['severity']}">{escape(str(f['severity']).upper())}</span>
+                        <span class="finding-title" style="margin-left:8px;">{escape(str(f['title']))}</span>
                     </div>
-                    <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:{COLORS['text_secondary']};">{f['id']}</span>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:{COLORS['text_secondary']};">{escape(str(f['id']))}</span>
                 </div>
-                <div class="finding-meta">{f['category']} · {f['target']} · {f['status'].title()} · Rule {f['rule']}</div>
+                <div class="finding-meta">{escape(str(f['category']))} · {escape(str(f['target']))} · {escape(str(f['status']).title())} · Rule {escape(str(f['rule']))}</div>
             </div>
             """,
             unsafe_allow_html=True,

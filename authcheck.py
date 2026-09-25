@@ -14,3 +14,6 @@ def require_auth():
     if not st.session_state.get("authenticated", False):
         st.switch_page("app.py")
         st.stop()
+    if not st.session_state.get("onboarding_seen", False):
+        st.switch_page("app.py")
+        st.stop()

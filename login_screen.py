@@ -237,5 +237,7 @@ def _attempt_sign_in(email: str, password: str):
         st.error("Enter your work email and password.")
         return
     st.session_state.authenticated = True
+    st.session_state.onboarding_seen = False
+    st.session_state.onboarding_loading = True
     st.session_state.user_email = email
     st.rerun()

@@ -35,11 +35,21 @@ COLORS = {
     "info": "#5C6B87",
 }
 
+THEME_PRESETS = {
+    "SecMate Dark": {"canvas": "#0A0E14", "surface": "#111827", "elevated": "#1C2333", "border": "#2D3548", "accent": "#00D9A3", "accent_dim": "#0AA37D", "text_primary": "#E2E8F0", "text_secondary": "#8B94A7"},
+    "Claude Dark": {"canvas": "#171717", "surface": "#20201D", "elevated": "#30302C", "border": "#3B3B35", "accent": "#D97757", "accent_dim": "#B85F43", "text_primary": "#F4F1EA", "text_secondary": "#AAA49A"},
+    "ChatGPT Dark": {"canvas": "#212121", "surface": "#171717", "elevated": "#2F2F2F", "border": "#3A3A3A", "accent": "#10A37F", "accent_dim": "#0E8F70", "text_primary": "#ECECEC", "text_secondary": "#AFAFAF"},
+    "Blue Cyber": {"canvas": "#07111F", "surface": "#0E1B2E", "elevated": "#162A45", "border": "#274463", "accent": "#4A9EFF", "accent_dim": "#2F6FED", "text_primary": "#EAF3FF", "text_secondary": "#93A8C3"},
+    "White": {"canvas": "#F7F8FA", "surface": "#FFFFFF", "elevated": "#EEF2F7", "border": "#D8DEE8", "accent": "#2563EB", "accent_dim": "#1D4ED8", "text_primary": "#111827", "text_secondary": "#667085"},
+}
+
 SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"]
 
 
 def apply_theme():
     """Inject global CSS. Call once, right after st.set_page_config()."""
+    theme_name = st.session_state.get("dashboard_theme", "SecMate Dark")
+    active = {**COLORS, **THEME_PRESETS.get(theme_name, THEME_PRESETS["SecMate Dark"])}
     st.markdown(
         f"""
         <style>
@@ -69,12 +79,24 @@ def apply_theme():
             font-size: 14px;
             color: {COLORS['text_secondary']} !important;
         }}
+        div[data-testid="stSidebarNav"] a[href$="/Settings"],
+        div[data-testid="stSidebarNav"] a[href$="Settings"],
+        div[data-testid="stSidebarNav"] a[href$="/Profile"],
+        div[data-testid="stSidebarNav"] a[href$="Profile"] {{
+            display: none !important;
+        }}
+        div[data-testid="stSidebarNav"] ul li:first-child a span {{
+            display: none;
+        }}
+        div[data-testid="stSidebarNav"] ul li:first-child a::after {{
+            content: "Dashboard";
+        }}
         div[data-testid="stSidebarNav"] a:hover {{
             background-color: {COLORS['elevated']};
             color: {COLORS['text_primary']} !important;
         }}
         div[data-testid="stSidebarNav"] a[aria-current="page"] {{
-            background-color: {COLORS['elevated']};
+            background: linear-gradient(90deg, rgba(0,217,163,0.12), {COLORS['elevated']});
             color: {COLORS['accent']} !important;
             font-weight: 600;
             border-left: 2px solid {COLORS['accent']};
@@ -84,9 +106,10 @@ def apply_theme():
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 18px 16px 14px 16px;
+            padding: 16px 10px 14px 10px;
             border-bottom: 1px solid {COLORS['border']};
-            margin-bottom: 6px;
+            border-top: 1px solid {COLORS['border']};
+            margin: 42px 16px 8px 16px;
         }}
         .sidebar-brand .mark {{
             width: 28px; height: 28px;
@@ -101,6 +124,90 @@ def apply_theme():
         }}
         .sidebar-brand .tag {{
             font-size: 11px; color: {COLORS['text_secondary']};
+        }}
+
+        .sidebar-account {{
+            margin: 8px 16px 12px 16px;
+            padding: 10px;
+            border: 1px solid {COLORS['border']};
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+        }}
+        .sidebar-profile {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }}
+        .sidebar-avatar {{
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, {COLORS['accent']}, {COLORS['low']});
+            color: {COLORS['canvas']};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+        }}
+        .sidebar-user-name {{
+            color: {COLORS['text_primary']};
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.2;
+        }}
+        .sidebar-user-role {{
+            color: {COLORS['text_secondary']};
+            font-size: 11px;
+            margin-top: 2px;
+        }}
+        .sidebar-link {{
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 9px;
+            color: {COLORS['text_secondary']};
+            border-radius: 7px;
+            font-size: 13px;
+            text-decoration: none;
+        }}
+        .sidebar-link:hover {{
+            background: {COLORS['elevated']};
+            color: {COLORS['text_primary']};
+        }}
+        .sidebar-icon {{
+            width: 15px;
+            height: 15px;
+            display: inline-flex;
+            color: {COLORS['text_secondary']};
+        }}
+        section[data-testid="stSidebar"] .stButton > button {{
+            margin: 4px 16px 0 16px;
+            width: calc(100% - 32px);
+            background: transparent;
+            color: {COLORS['text_secondary']};
+            border: 1px solid {COLORS['border']};
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 8px 12px;
+            text-align: left;
+        }}
+        section[data-testid="stSidebar"] .stButton > button:hover {{
+            background: rgba(240,68,82,0.08);
+            color: {COLORS['critical']};
+            border-color: rgba(240,68,82,0.35);
+        }}
+        section[data-testid="stSidebar"] .stButton > button::before {{
+            content: "";
+            width: 15px;
+            height: 15px;
+            display: inline-block;
+            margin-right: 9px;
+            vertical-align: -2px;
+            background-color: currentColor;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15 12H3m0 0 4-4m-4 4 4 4m5-10V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-1'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15 12H3m0 0 4-4m-4 4 4 4m5-10V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-1'/%3E%3C/svg%3E") center / contain no-repeat;
         }}
 
         /* ---- Cards ---- */
@@ -216,10 +323,39 @@ def apply_theme():
         """,
         unsafe_allow_html=True,
     )
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{ background-color: {active['canvas']} !important; }}
+        section[data-testid="stSidebar"] {{ background-color: {active['surface']} !important; }}
+        section[data-testid="stSidebar"] *, .stApp {{ color: {active['text_primary']}; }}
+        div[data-testid="stSidebarNav"] a {{ color: {active['text_secondary']} !important; }}
+        div[data-testid="stSidebarNav"] a:hover {{ background-color: {active['elevated']} !important; }}
+        div[data-testid="stSidebarNav"] a[aria-current="page"] {{
+            background: linear-gradient(90deg, {active['accent']}22, {active['elevated']}) !important;
+            color: {active['accent']} !important;
+            border-left-color: {active['accent']} !important;
+        }}
+        .sidebar-brand .mark, .stButton > button {{ background: {active['accent']} !important; }}
+        .sidebar-avatar {{ background: linear-gradient(135deg, {active['accent']}, {COLORS['low']}) !important; }}
+        .metric-card, div[data-testid="stVerticalBlockBorderWrapper"] > div {{
+            background-color: {active['surface']} !important;
+            border-color: {active['border']} !important;
+        }}
+        .metric-card .label, .sidebar-user-role, .sidebar-link, .section-title + div,
+        [data-testid="stMarkdownContainer"] p {{ color: {active['text_secondary']}; }}
+        .metric-card .value, .section-title, .sidebar-user-name {{ color: {active['text_primary']} !important; }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def sidebar_brand():
-    """Render the SecMate brand block at the top of the sidebar."""
+    """Render the SecMate brand and account block in the sidebar."""
+    user_email = st.session_state.get("user_email", "adhithya@example.com")
+    display_name = st.session_state.get("display_name", "Adhithya K V")
+    plan_name = st.session_state.get("plan_name", "Free")
     st.sidebar.markdown(
         f"""
         <div class="sidebar-brand">
@@ -229,9 +365,41 @@ def sidebar_brand():
                 <div class="tag">AI Security Assessment</div>
             </div>
         </div>
+        <div class="sidebar-account">
+            <div class="sidebar-profile">
+                <div class="sidebar-avatar">AD</div>
+                <div>
+                    <div class="sidebar-user-name">{display_name}</div>
+                    <div class="sidebar-user-role">{plan_name} plan</div>
+                </div>
+            </div>
+        </div>
         """,
         unsafe_allow_html=True,
     )
+
+    with st.sidebar.popover("Profile", use_container_width=True):
+        st.markdown(f"**{display_name}**")
+        st.caption(user_email)
+        st.markdown(f"Plan: **{plan_name}**")
+        plan = st.radio("Account type", ["Free", "Paid"], index=0 if plan_name == "Free" else 1, horizontal=True)
+        st.session_state.plan_name = plan
+        st.text_input("Name", value=display_name, key="display_name")
+        st.caption("Profile changes are visual only in this mockup.")
+
+    with st.sidebar.popover("Settings", use_container_width=True):
+        st.markdown("**Settings**")
+        theme_names = list(THEME_PRESETS.keys())
+        current_theme = st.session_state.get("dashboard_theme", "SecMate Dark")
+        st.selectbox("Dashboard theme", theme_names, index=theme_names.index(current_theme), key="dashboard_theme")
+        st.selectbox("Language", ["English", "Hindi", "Arabic", "French"], key="language_pref")
+        st.selectbox("Dashboard density", ["Comfortable", "Compact", "Spacious"], key="dashboard_density")
+        st.toggle("Reduced motion", key="reduced_motion")
+        st.divider()
+        st.button("Upgrade plan", use_container_width=True)
+        st.button("Get apps and extensions", use_container_width=True)
+        st.button("Learn more", use_container_width=True)
+        st.button("Get help", use_container_width=True)
 
 
 def metric_card(label: str, value: str, delta: str = None, delta_positive: bool = True):
@@ -267,7 +435,9 @@ def status_pill(status: str) -> str:
 
 def logout_button():
     """Render a 'Log out' control at the bottom of the sidebar."""
-    st.sidebar.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+    st.sidebar.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
     if st.sidebar.button("Log out", use_container_width=True):
         st.session_state.authenticated = False
+        st.session_state.onboarding_seen = False
+        st.session_state.onboarding_loading = False
         st.switch_page("app.py")
