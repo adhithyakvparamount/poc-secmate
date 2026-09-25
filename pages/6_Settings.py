@@ -8,11 +8,12 @@ session store).
 """
 
 import streamlit as st
-from theme import apply_theme, sidebar_brand, COLORS, logout_button
+from theme import apply_theme, sidebar_brand, get_active_colors, THEME_PRESETS, logout_button
 from authcheck import require_auth
 
 st.set_page_config(page_title="SecMate — Settings", layout="wide")
 require_auth()
+COLORS = get_active_colors()
 apply_theme()
 sidebar_brand()
 logout_button()
@@ -28,7 +29,9 @@ with st.container(border=True):
     st.markdown('<div class="section-title">Appearance</div>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.selectbox("Theme", ["SecMate Dark", "ChatGPT Dark", "Teal Cyber", "High Contrast"])
+        theme_names = list(THEME_PRESETS.keys())
+        current_theme = st.session_state.get("dashboard_theme", "SecMate Dark")
+        st.selectbox("Theme", theme_names, index=theme_names.index(current_theme))
     with c2:
         st.selectbox("Dashboard density", ["Comfortable", "Compact", "Spacious"])
     with c3:

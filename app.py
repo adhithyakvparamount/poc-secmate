@@ -22,10 +22,11 @@ import pandas as pd
 import plotly.graph_objects as go
 import time
 
-from theme import apply_theme, sidebar_brand, COLORS, metric_card, status_pill, logout_button
+from theme import apply_theme, sidebar_brand, get_active_colors, metric_card, status_pill, logout_button
 from login_screen import render_login_screen
 
 st.set_page_config(page_title="SecMate", layout="wide", initial_sidebar_state="expanded")
+COLORS = get_active_colors()
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -58,7 +59,7 @@ def render_onboarding_loading():
             border-radius: 22px;
             background: linear-gradient(135deg, {COLORS['accent']}, {COLORS['low']});
             animation: scalePulse 1.05s ease-in-out infinite;
-            box-shadow: 0 0 42px rgba(139,124,246,0.28);
+            box-shadow: 0 0 42px {COLORS['accent']}47;
         }}
         @keyframes scalePulse {{
             0%, 100% {{ transform: scale(0.86); opacity: 0.72; }}
@@ -83,13 +84,13 @@ def render_onboarding_page():
         f"""
         <style>
         section[data-testid="stSidebar"] {{ display: none; }}
-        .stApp {{ background: radial-gradient(900px 520px at 28% 10%, rgba(139,124,246,0.11), transparent 62%), {COLORS['canvas']}; }}
+        .stApp {{ background: radial-gradient(900px 520px at 28% 10%, {COLORS['accent']}1C, transparent 62%), {COLORS['canvas']}; }}
         .block-container {{ max-width: 1120px; padding-top: 3.5rem; }}
         .onboarding-hero {{
             border: 1px solid {COLORS['border']};
             border-radius: 22px;
             padding: 34px;
-            background: linear-gradient(135deg, rgba(28,35,51,0.92), rgba(17,24,39,0.78));
+            background: linear-gradient(135deg, {COLORS['surface']}, {COLORS['elevated']});
         }}
         .onboarding-kicker {{ color:{COLORS['accent']}; font-family:'JetBrains Mono',monospace; font-size:12px; margin-bottom:10px; }}
         .onboarding-title {{ color:{COLORS['text_primary']}; font-size:38px; font-weight:800; line-height:1.12; max-width:700px; }}
@@ -98,14 +99,14 @@ def render_onboarding_page():
             border: 1px solid {COLORS['border']};
             border-radius: 14px;
             padding: 16px;
-            background: rgba(255,255,255,0.018);
+            background: {COLORS['elevated']};
             min-height: 132px;
         }}
         .onboarding-number {{
             width: 28px;
             height: 28px;
             border-radius: 8px;
-            background: rgba(139,124,246,0.13);
+            background: {COLORS['accent']}21;
             color: {COLORS['accent']};
             display: flex;
             align-items: center;
@@ -284,7 +285,7 @@ def render_quick_start_panel():
                 st.markdown(
                     f"""
                     <div style="display:flex; gap:10px; margin-bottom:10px; align-items:flex-start;">
-                        <div style="width:18px; height:18px; border-radius:50%; background:rgba(139,124,246,0.14); color:{COLORS['accent']}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">✓</div>
+                        <div style="width:18px; height:18px; border-radius:50%; background:{COLORS['accent']}24; color:{COLORS['accent']}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">✓</div>
                         <div>
                             <div style="color:{COLORS['text_primary']}; font-size:13.5px; font-weight:600;">{title}</div>
                             <div style="color:{COLORS['text_secondary']}; font-size:12.5px; margin-top:2px;">{description}</div>
@@ -296,7 +297,7 @@ def render_quick_start_panel():
         with right:
             st.markdown(
                 f"""
-                <div style="border:1px solid {COLORS['border']}; border-radius:12px; padding:16px; background:rgba(255,255,255,0.018);">
+                <div style="border:1px solid {COLORS['border']}; border-radius:12px; padding:16px; background:{COLORS['elevated']};">
                     <div style="color:{COLORS['text_secondary']}; font-size:12px; margin-bottom:8px;">Recommended next action</div>
                     <div style="color:{COLORS['text_primary']}; font-size:17px; font-weight:700; margin-bottom:8px;">Review critical findings</div>
                     <div style="color:{COLORS['text_secondary']}; font-size:12.8px; line-height:1.55; margin-bottom:14px;">There are 6 open critical findings. Prioritize evidence review before exporting a report.</div>

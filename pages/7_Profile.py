@@ -6,11 +6,12 @@ Profile controls are frontend placeholders and do not persist yet.
 """
 
 import streamlit as st
-from theme import apply_theme, sidebar_brand, COLORS, logout_button
+from theme import apply_theme, sidebar_brand, get_active_colors, logout_button
 from authcheck import require_auth
 
 st.set_page_config(page_title="SecMate — Profile", layout="wide")
 require_auth()
+COLORS = get_active_colors()
 apply_theme()
 sidebar_brand()
 logout_button()
@@ -31,7 +32,7 @@ with left:
         st.markdown(
             f"""
             <div style="display:flex; align-items:center; gap:16px;">
-                <div style="width:62px; height:62px; border-radius:50%; background:linear-gradient(135deg,{COLORS['accent']},{COLORS['low']}); color:{COLORS['canvas']}; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800;">AD</div>
+                <div style="width:62px; height:62px; border-radius:50%; background:linear-gradient(135deg,{COLORS['accent']},{COLORS['low']}); color:{COLORS['accent_text']}; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800;">AD</div>
                 <div>
                     <div style="font-size:20px; font-weight:700; color:{COLORS['text_primary']};">Adhithya</div>
                     <div style="font-size:13px; color:{COLORS['text_secondary']};">Security Analyst</div>

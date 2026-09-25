@@ -7,7 +7,7 @@ call any backend / model / scanning logic.
 
 Usage in any page:
     import streamlit as st
-    from theme import apply_theme, COLORS, metric_card, severity_badge, status_pill
+    from theme import apply_theme, get_active_colors, metric_card, severity_badge, status_pill
 
     st.set_page_config(page_title="SecMate", layout="wide")
     apply_theme()
@@ -25,6 +25,7 @@ COLORS = {
     "border": "#2D3548",
     "accent": "#8B7CF6",
     "accent_dim": "#6D5FDB",
+    "accent_text": "#FFFFFF",
     "text_primary": "#E2E8F0",
     "text_secondary": "#8B94A7",
     # Severity scale — reserved for risk indication only, never decoration
@@ -36,20 +37,27 @@ COLORS = {
 }
 
 THEME_PRESETS = {
-    "SecMate Dark": {"canvas": "#0A0E14", "surface": "#111827", "elevated": "#1C2333", "border": "#2D3548", "accent": "#8B7CF6", "accent_dim": "#6D5FDB", "text_primary": "#E2E8F0", "text_secondary": "#8B94A7"},
-    "Claude Dark": {"canvas": "#171717", "surface": "#20201D", "elevated": "#30302C", "border": "#3B3B35", "accent": "#D97757", "accent_dim": "#B85F43", "text_primary": "#F4F1EA", "text_secondary": "#AAA49A"},
-    "ChatGPT Dark": {"canvas": "#212121", "surface": "#171717", "elevated": "#2F2F2F", "border": "#3A3A3A", "accent": "#10A37F", "accent_dim": "#0E8F70", "text_primary": "#ECECEC", "text_secondary": "#AFAFAF"},
-    "Blue Cyber": {"canvas": "#07111F", "surface": "#0E1B2E", "elevated": "#162A45", "border": "#274463", "accent": "#4A9EFF", "accent_dim": "#2F6FED", "text_primary": "#EAF3FF", "text_secondary": "#93A8C3"},
-    "White": {"canvas": "#F7F8FA", "surface": "#FFFFFF", "elevated": "#EEF2F7", "border": "#D8DEE8", "accent": "#2563EB", "accent_dim": "#1D4ED8", "text_primary": "#111827", "text_secondary": "#667085"},
+    "SecMate Dark": {"canvas": "#090D15", "surface": "#121927", "elevated": "#202A3D", "border": "#5A6A87", "accent": "#A597FF", "accent_dim": "#6657D6", "accent_text": "#FFFFFF", "text_primary": "#F1F5FB", "text_secondary": "#AAB5C8"},
+    "Claude Dark": {"canvas": "#171715", "surface": "#23221E", "elevated": "#33312B", "border": "#706B60", "accent": "#F09A79", "accent_dim": "#A9472D", "accent_text": "#FFFFFF", "text_primary": "#FFF9F0", "text_secondary": "#C5BDB0"},
+    "ChatGPT Dark": {"canvas": "#151515", "surface": "#212121", "elevated": "#303030", "border": "#6B6B6B", "accent": "#4DDBAE", "accent_dim": "#087A60", "accent_text": "#FFFFFF", "text_primary": "#F5F5F5", "text_secondary": "#BDBDBD"},
+    "Blue Cyber": {"canvas": "#06101D", "surface": "#0D1B2D", "elevated": "#172D49", "border": "#4779A8", "accent": "#70B7FF", "accent_dim": "#2563C7", "accent_text": "#FFFFFF", "text_primary": "#F2F8FF", "text_secondary": "#ADC2DA"},
+    "White": {"canvas": "#F4F6F9", "surface": "#FFFFFF", "elevated": "#E9EEF5", "border": "#7A889D", "accent": "#2563EB", "accent_dim": "#1D4ED8", "accent_text": "#FFFFFF", "text_primary": "#111827", "text_secondary": "#526176"},
 }
 
 SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"]
 
 
+def get_active_colors():
+    """Return the palette selected for the current Streamlit session."""
+    theme_name = st.session_state.get("dashboard_theme", "SecMate Dark")
+    return {**COLORS, **THEME_PRESETS.get(theme_name, THEME_PRESETS["SecMate Dark"])}
+
+
 def apply_theme():
     """Inject global CSS. Call once, right after st.set_page_config()."""
     theme_name = st.session_state.get("dashboard_theme", "SecMate Dark")
-    active = {**COLORS, **THEME_PRESETS.get(theme_name, THEME_PRESETS["SecMate Dark"])}
+    active = get_active_colors()
+    color_scheme = "light" if theme_name == "White" else "dark"
     st.markdown(
         f"""
         <style>
@@ -57,27 +65,28 @@ def apply_theme():
 
         html, body, [class*="css"] {{
             font-family: 'Inter', sans-serif;
+            color-scheme: {color_scheme};
         }}
 
         .stApp {{
-            background-color: {COLORS['canvas']};
-            color: {COLORS['text_primary']};
+            background-color: {active['canvas']};
+            color: {active['text_primary']};
         }}
 
         /* ---- Sidebar ---- */
         section[data-testid="stSidebar"] {{
-            background-color: {COLORS['surface']};
-            border-right: 1px solid {COLORS['border']};
+            background-color: {active['surface']};
+            border-right: 1px solid {active['border']};
         }}
         section[data-testid="stSidebar"] * {{
-            color: {COLORS['text_primary']};
+            color: {active['text_primary']};
         }}
         div[data-testid="stSidebarNav"] a {{
             border-radius: 6px;
             padding: 8px 12px !important;
             margin: 2px 8px;
             font-size: 14px;
-            color: {COLORS['text_secondary']} !important;
+            color: {active['text_secondary']} !important;
         }}
         div[data-testid="stSidebarNav"] a[href$="/Settings"],
         div[data-testid="stSidebarNav"] a[href$="Settings"],
@@ -92,14 +101,14 @@ def apply_theme():
             content: "Dashboard";
         }}
         div[data-testid="stSidebarNav"] a:hover {{
-            background-color: {COLORS['elevated']};
-            color: {COLORS['text_primary']} !important;
+            background-color: {active['elevated']};
+            color: {active['text_primary']} !important;
         }}
         div[data-testid="stSidebarNav"] a[aria-current="page"] {{
-            background: linear-gradient(90deg, rgba(139,124,246,0.12), {COLORS['elevated']});
-            color: {COLORS['accent']} !important;
+            background: linear-gradient(90deg, {active['accent']}26, {active['elevated']});
+            color: {active['accent']} !important;
             font-weight: 600;
-            border-left: 2px solid {COLORS['accent']};
+            border-left: 2px solid {active['accent']};
         }}
 
         .sidebar-brand {{
@@ -107,31 +116,31 @@ def apply_theme():
             align-items: center;
             gap: 10px;
             padding: 16px 10px 14px 10px;
-            border-bottom: 1px solid {COLORS['border']};
-            border-top: 1px solid {COLORS['border']};
+            border-bottom: 1px solid {active['border']};
+            border-top: 1px solid {active['border']};
             margin: 42px 16px 8px 16px;
         }}
         .sidebar-brand .mark {{
             width: 28px; height: 28px;
             border-radius: 6px;
-            background: linear-gradient(135deg, {COLORS['accent']}, {COLORS['accent_dim']});
+            background: linear-gradient(135deg, {active['accent']}, {active['accent_dim']});
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; color: {COLORS['canvas']}; font-size: 14px;
+            font-weight: 700; color: {active['accent_text']}; font-size: 14px;
         }}
         .sidebar-brand .name {{
-            font-weight: 600; font-size: 15px; color: {COLORS['text_primary']};
+            font-weight: 600; font-size: 15px; color: {active['text_primary']};
             letter-spacing: 0.2px;
         }}
         .sidebar-brand .tag {{
-            font-size: 11px; color: {COLORS['text_secondary']};
+            font-size: 11px; color: {active['text_secondary']};
         }}
 
         .sidebar-account {{
             margin: 8px 16px 12px 16px;
             padding: 10px;
-            border: 1px solid {COLORS['border']};
+            border: 1px solid {active['border']};
             border-radius: 10px;
-            background: rgba(255,255,255,0.02);
+            background: {active['elevated']};
         }}
         .sidebar-profile {{
             display: flex;
@@ -143,8 +152,8 @@ def apply_theme():
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background: linear-gradient(135deg, {COLORS['accent']}, {COLORS['low']});
-            color: {COLORS['canvas']};
+            background: linear-gradient(135deg, {active['accent']}, {active['low']});
+            color: {active['accent_text']};
             display: flex;
             align-items: center;
             justify-content: center;
@@ -152,13 +161,13 @@ def apply_theme():
             font-size: 12px;
         }}
         .sidebar-user-name {{
-            color: {COLORS['text_primary']};
+            color: {active['text_primary']};
             font-size: 13px;
             font-weight: 600;
             line-height: 1.2;
         }}
         .sidebar-user-role {{
-            color: {COLORS['text_secondary']};
+            color: {active['text_secondary']};
             font-size: 11px;
             margin-top: 2px;
         }}
@@ -167,27 +176,27 @@ def apply_theme():
             align-items: center;
             gap: 9px;
             padding: 8px 9px;
-            color: {COLORS['text_secondary']};
+            color: {active['text_secondary']};
             border-radius: 7px;
             font-size: 13px;
             text-decoration: none;
         }}
         .sidebar-link:hover {{
-            background: {COLORS['elevated']};
-            color: {COLORS['text_primary']};
+            background: {active['elevated']};
+            color: {active['text_primary']};
         }}
         .sidebar-icon {{
             width: 15px;
             height: 15px;
             display: inline-flex;
-            color: {COLORS['text_secondary']};
+            color: {active['text_secondary']};
         }}
         section[data-testid="stSidebar"] .stButton > button {{
             margin: 4px 16px 0 16px;
             width: calc(100% - 32px);
             background: transparent;
-            color: {COLORS['text_secondary']};
-            border: 1px solid {COLORS['border']};
+            color: {active['text_secondary']};
+            border: 1px solid {active['border']};
             border-radius: 8px;
             font-weight: 500;
             padding: 8px 12px;
@@ -195,7 +204,7 @@ def apply_theme():
         }}
         section[data-testid="stSidebar"] .stButton > button:hover {{
             background: rgba(240,68,82,0.08);
-            color: {COLORS['critical']};
+            color: {active['critical']};
             border-color: rgba(240,68,82,0.35);
         }}
         section[data-testid="stSidebar"] .stButton > button::before {{
@@ -212,28 +221,28 @@ def apply_theme():
 
         /* ---- Cards ---- */
         div[data-testid="stVerticalBlockBorderWrapper"] > div {{
-            background-color: {COLORS['surface']};
-            border: 1px solid {COLORS['border']} !important;
+            background-color: {active['surface']};
+            border: 1px solid {active['border']} !important;
             border-radius: 10px;
         }}
 
         /* ---- Metric cards ---- */
         .metric-card {{
-            background-color: {COLORS['surface']};
-            border: 1px solid {COLORS['border']};
+            background-color: {active['surface']};
+            border: 1px solid {active['border']};
             border-radius: 10px;
             padding: 16px 18px;
         }}
         .metric-card .label {{
-            font-size: 12.5px; color: {COLORS['text_secondary']};
+            font-size: 12.5px; color: {active['text_secondary']};
             margin-bottom: 6px;
         }}
         .metric-card .value {{
-            font-size: 26px; font-weight: 600; color: {COLORS['text_primary']};
+            font-size: 26px; font-weight: 600; color: {active['text_primary']};
             font-family: 'JetBrains Mono', monospace;
         }}
-        .metric-card .delta-up {{ color: {COLORS['accent']}; font-size: 12.5px; }}
-        .metric-card .delta-down {{ color: {COLORS['critical']}; font-size: 12.5px; }}
+        .metric-card .delta-up {{ color: {active['accent']}; font-size: 12.5px; }}
+        .metric-card .delta-down {{ color: {active['critical']}; font-size: 12.5px; }}
 
         /* ---- Badges (severity) ---- */
         .badge {{
@@ -245,11 +254,11 @@ def apply_theme():
             font-family: 'JetBrains Mono', monospace;
             letter-spacing: 0.3px;
         }}
-        .badge-critical {{ background: rgba(240,68,82,0.15); color: {COLORS['critical']}; }}
-        .badge-high     {{ background: rgba(255,138,61,0.15); color: {COLORS['high']}; }}
-        .badge-medium   {{ background: rgba(245,197,66,0.15); color: {COLORS['medium']}; }}
-        .badge-low      {{ background: rgba(74,158,255,0.15); color: {COLORS['low']}; }}
-        .badge-info     {{ background: rgba(92,107,135,0.20); color: {COLORS['info']}; }}
+        .badge-critical {{ background: rgba(240,68,82,0.18); color: {active['critical']}; }}
+        .badge-high     {{ background: rgba(255,138,61,0.18); color: {active['high']}; }}
+        .badge-medium   {{ background: rgba(245,197,66,0.18); color: {active['medium']}; }}
+        .badge-low      {{ background: rgba(74,158,255,0.18); color: {active['low']}; }}
+        .badge-info     {{ background: rgba(92,107,135,0.22); color: {active['info']}; }}
 
         /* ---- Status pills (run status, not severity) ---- */
         .pill {{
@@ -259,92 +268,159 @@ def apply_theme():
             font-size: 11.5px;
             font-weight: 500;
         }}
-        .pill-complete {{ background: rgba(139,124,246,0.15); color: {COLORS['accent']}; }}
-        .pill-running  {{ background: rgba(74,158,255,0.15); color: {COLORS['low']}; }}
-        .pill-failed   {{ background: rgba(240,68,82,0.15); color: {COLORS['critical']}; }}
-        .pill-pending  {{ background: rgba(139,148,167,0.15); color: {COLORS['text_secondary']}; }}
+        .pill-complete {{ background: {active['accent']}26; color: {active['accent']}; }}
+        .pill-running  {{ background: rgba(74,158,255,0.18); color: {active['low']}; }}
+        .pill-failed   {{ background: rgba(240,68,82,0.18); color: {active['critical']}; }}
+        .pill-pending  {{ background: {active['elevated']}; color: {active['text_secondary']}; }}
 
         /* ---- Findings row (severity edge bar) ---- */
         .finding-row {{
-            background: {COLORS['surface']};
-            border: 1px solid {COLORS['border']};
+            background: {active['surface']};
+            border: 1px solid {active['border']};
             border-left: 3px solid var(--sev-color);
             border-radius: 6px;
             padding: 12px 14px;
             margin-bottom: 8px;
         }}
-        .finding-title {{ font-weight: 600; font-size: 14px; color: {COLORS['text_primary']}; }}
-        .finding-meta {{ font-size: 12px; color: {COLORS['text_secondary']}; margin-top: 2px; }}
+        .finding-title {{ font-weight: 600; font-size: 14px; color: {active['text_primary']}; }}
+        .finding-meta {{ font-size: 12px; color: {active['text_secondary']}; margin-top: 2px; }}
 
         /* ---- Transcript cards (Red / Blue team) ---- */
         .transcript-card {{
-            border: 1px solid {COLORS['border']};
+            border: 1px solid {active['border']};
             border-radius: 8px;
             padding: 12px 14px;
             margin-bottom: 10px;
         }}
-        .transcript-prompt {{ background: rgba(139,124,246,0.06); border-left: 3px solid {COLORS['accent']}; }}
-        .transcript-response {{ background: rgba(74,158,255,0.06); border-left: 3px solid {COLORS['low']}; }}
+        .transcript-prompt {{ background: {active['accent']}12; border-left: 3px solid {active['accent']}; }}
+        .transcript-response {{ background: rgba(74,158,255,0.10); border-left: 3px solid {active['low']}; }}
         .transcript-label {{
-            font-size: 11px; text-transform: none; color: {COLORS['text_secondary']};
+            font-size: 11px; text-transform: none; color: {active['text_secondary']};
             margin-bottom: 6px; font-weight: 500;
         }}
         .transcript-body {{
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px; color: {COLORS['text_primary']};
+            font-size: 13px; color: {active['text_primary']};
             white-space: pre-wrap; line-height: 1.5;
         }}
 
         /* ---- Buttons ---- */
         .stButton > button {{
-            background-color: {COLORS['accent']};
-            color: {COLORS['canvas']};
-            border: none;
+            background-color: {active['accent_dim']};
+            color: {active['accent_text']};
+            border: 1px solid {active['accent_dim']};
             border-radius: 6px;
             font-weight: 600;
             padding: 6px 18px;
         }}
         .stButton > button:hover {{
-            background-color: {COLORS['accent_dim']};
-            color: {COLORS['canvas']};
+            background-color: {active['accent']};
+            color: {active['accent_text']};
+            border-color: {active['accent']};
         }}
 
         /* ---- Section headers ---- */
         .section-title {{
-            font-size: 15px; font-weight: 600; color: {COLORS['text_primary']};
+            font-size: 15px; font-weight: 600; color: {active['text_primary']};
             margin-bottom: 10px;
+        }}
+
+        /* ---- Theme-aware text and controls ---- */
+        .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
+        .stApp label, .stApp [data-testid="stMarkdownContainer"],
+        .stApp [data-testid="stWidgetLabel"] {{
+            color: {active['text_primary']};
+        }}
+        .stApp [data-testid="stCaptionContainer"],
+        .stApp small {{
+            color: {active['text_secondary']} !important;
+        }}
+        .stApp hr {{ border-color: {active['border']}; }}
+
+        .stApp input,
+        .stApp textarea,
+        .stApp [data-baseweb="select"] > div,
+        .stApp [data-baseweb="base-input"] {{
+            background-color: {active['elevated']} !important;
+            color: {active['text_primary']} !important;
+            border-color: {active['border']} !important;
+        }}
+        .stApp input::placeholder,
+        .stApp textarea::placeholder {{
+            color: {active['text_secondary']} !important;
+            opacity: 0.8;
+        }}
+        .stApp input:focus,
+        .stApp textarea:focus,
+        .stApp [data-baseweb="select"] > div:focus-within {{
+            border-color: {active['accent']} !important;
+            box-shadow: 0 0 0 1px {active['accent']} !important;
+        }}
+
+        [data-baseweb="popover"],
+        [data-baseweb="menu"],
+        [role="listbox"] {{
+            background-color: {active['surface']} !important;
+            color: {active['text_primary']} !important;
+            border-color: {active['border']} !important;
+        }}
+        [role="option"] {{
+            color: {active['text_primary']} !important;
+        }}
+        [role="option"]:hover,
+        [role="option"][aria-selected="true"] {{
+            background-color: {active['elevated']} !important;
+        }}
+        [data-baseweb="tag"] {{
+            background-color: {active['accent_dim']} !important;
+            color: {active['accent_text']} !important;
+        }}
+
+        .stTabs [data-baseweb="tab-list"] {{
+            border-bottom: 1px solid {active['border']};
+        }}
+        .stTabs [data-baseweb="tab"] {{
+            color: {active['text_secondary']};
+        }}
+        .stTabs [aria-selected="true"] {{
+            color: {active['accent']} !important;
+            border-bottom-color: {active['accent']} !important;
+        }}
+
+        [data-testid="stExpander"],
+        [data-testid="stFileUploaderDropzone"],
+        [data-testid="stPopoverBody"] {{
+            background-color: {active['surface']} !important;
+            color: {active['text_primary']} !important;
+            border-color: {active['border']} !important;
+        }}
+        [data-testid="stAlert"] {{
+            background-color: {active['elevated']} !important;
+            color: {active['text_primary']} !important;
+            border-color: {active['border']} !important;
+        }}
+
+        [data-baseweb="checkbox"] [aria-checked="true"],
+        [data-baseweb="radio"] [aria-checked="true"],
+        [data-testid="stToggle"] [data-checked="true"] {{
+            background-color: {active['accent_dim']} !important;
+            border-color: {active['accent_dim']} !important;
+        }}
+        [data-baseweb="slider"] [role="slider"] {{
+            background-color: {active['accent_dim']} !important;
+            border-color: {active['accent_text']} !important;
+        }}
+
+        [data-testid="stDataFrame"],
+        [data-testid="stTable"] {{
+            color: {active['text_primary']};
+            border-color: {active['border']};
         }}
 
         /* ---- Misc cleanup ---- */
         #MainMenu {{visibility: hidden;}}
         footer {{visibility: hidden;}}
         header[data-testid="stHeader"] {{background: transparent;}}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{ background-color: {active['canvas']} !important; }}
-        section[data-testid="stSidebar"] {{ background-color: {active['surface']} !important; }}
-        section[data-testid="stSidebar"] *, .stApp {{ color: {active['text_primary']}; }}
-        div[data-testid="stSidebarNav"] a {{ color: {active['text_secondary']} !important; }}
-        div[data-testid="stSidebarNav"] a:hover {{ background-color: {active['elevated']} !important; }}
-        div[data-testid="stSidebarNav"] a[aria-current="page"] {{
-            background: linear-gradient(90deg, {active['accent']}22, {active['elevated']}) !important;
-            color: {active['accent']} !important;
-            border-left-color: {active['accent']} !important;
-        }}
-        .sidebar-brand .mark, .stButton > button {{ background: {active['accent']} !important; }}
-        .sidebar-avatar {{ background: linear-gradient(135deg, {active['accent']}, {COLORS['low']}) !important; }}
-        .metric-card, div[data-testid="stVerticalBlockBorderWrapper"] > div {{
-            background-color: {active['surface']} !important;
-            border-color: {active['border']} !important;
-        }}
-        .metric-card .label, .sidebar-user-role, .sidebar-link, .section-title + div,
-        [data-testid="stMarkdownContainer"] p {{ color: {active['text_secondary']}; }}
-        .metric-card .value, .section-title, .sidebar-user-name {{ color: {active['text_primary']} !important; }}
         </style>
         """,
         unsafe_allow_html=True,

@@ -7,11 +7,12 @@ credential storage and third-party APIs before production use.
 """
 
 import streamlit as st
-from theme import apply_theme, sidebar_brand, COLORS, status_pill, logout_button
+from theme import apply_theme, sidebar_brand, get_active_colors, status_pill, logout_button
 from authcheck import require_auth
 
 st.set_page_config(page_title="SecMate — Integrations", layout="wide")
 require_auth()
+COLORS = get_active_colors()
 apply_theme()
 sidebar_brand()
 logout_button()

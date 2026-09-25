@@ -7,11 +7,12 @@ your existing backend's report-generation function and file output.
 """
 
 import streamlit as st
-from theme import apply_theme, sidebar_brand, COLORS, logout_button
+from theme import apply_theme, sidebar_brand, get_active_colors, logout_button
 from authcheck import require_auth
 
 st.set_page_config(page_title="SecMate — Reports", layout="wide")
 require_auth()
+COLORS = get_active_colors()
 apply_theme()
 sidebar_brand()
 logout_button()

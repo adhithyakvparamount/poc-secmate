@@ -8,12 +8,13 @@ function that currently kicks off Red Team / Blue Team / VAPT logic).
 """
 
 import streamlit as st
-from theme import apply_theme, sidebar_brand, COLORS, status_pill, logout_button
+from theme import apply_theme, sidebar_brand, get_active_colors, status_pill, logout_button
 from authcheck import require_auth
 from assessment_runner import run_assessment
 
 st.set_page_config(page_title="SecMate — New Assessment", layout="wide")
 require_auth()
+COLORS = get_active_colors()
 apply_theme()
 sidebar_brand()
 logout_button()
