@@ -8,13 +8,13 @@ there is no real authentication yet. Replace the check inside
 credentials, look up the organization, etc.) before setting
 st.session_state.authenticated = True.
 
-NOTE ON COLOR: this screen uses a BLUE accent (#2F6FED), matching the
-reference design. The default dashboard theme uses an electric-violet
-accent from theme.py.
+NOTE ON COLOR: this screen and the default dashboard use the SecMate
+enterprise-blue visual system defined in theme.py.
 """
 
 import streamlit as st
 
+from theme import shield_logo_svg
 from workspace import initialize_workspace_state, load_workspace_profile
 
 BLUE = "#2F6FED"
@@ -57,6 +57,7 @@ def _inject_login_css():
             margin-bottom: 60px;
         }}
         .brand {{ display: flex; align-items: center; gap: 12px; }}
+        .brand svg {{ filter: drop-shadow(0 0 18px rgba(45,158,255,.3)); }}
         .brand-name {{ font-size: 22px; font-weight: 700; color: {TEXT_PRIMARY}; line-height: 1.1; }}
         .brand-tag {{ font-size: 12.5px; color: {TEXT_SECONDARY}; }}
         .env-pill {{
@@ -79,7 +80,7 @@ def _inject_login_css():
             margin-top: 22px; max-width: 480px;
         }}
 
-        .login-card-wrap {{
+        div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:nth-child(2) > div[data-testid="stVerticalBlock"] {{
             background: {CARD_BG};
             border: 1px solid {BORDER};
             border-radius: 16px;
@@ -90,36 +91,36 @@ def _inject_login_css():
         .help-link {{ font-size: 12.5px; color: {TEXT_SECONDARY}; text-align: right; }}
         .help-link a {{ color: {BLUE_LIGHT}; text-decoration: none; }}
 
-        .login-card-wrap div[data-testid="stTextInput"] input,
-        .login-card-wrap div[data-baseweb="select"] > div {{
+        div[data-testid="stColumn"]:nth-child(2) div[data-testid="stTextInput"] input,
+        div[data-testid="stColumn"]:nth-child(2) div[data-baseweb="select"] > div {{
             background-color: #0A1530 !important;
             border: 1px solid {BORDER} !important;
             border-radius: 8px !important;
             color: {TEXT_PRIMARY} !important;
         }}
-        .login-card-wrap label {{
+        div[data-testid="stColumn"]:nth-child(2) label {{
             color: {TEXT_PRIMARY} !important;
             font-size: 13.5px !important;
             font-weight: 500 !important;
         }}
-        .login-card-wrap .stButton > button {{
+        div[data-testid="stColumn"]:nth-child(2) .stButton > button {{
             width: 100%;
             border-radius: 8px;
             font-weight: 600;
             padding: 10px 0;
         }}
-        .primary-btn button {{
+        .st-key-sign_in button {{
             background-color: {BLUE} !important;
             color: white !important;
             border: none !important;
         }}
-        .primary-btn button:hover {{ background-color: {BLUE_LIGHT} !important; }}
-        .sso-btn button {{
+        .st-key-sign_in button:hover {{ background-color: {BLUE_LIGHT} !important; }}
+        .st-key-sso button {{
             background-color: transparent !important;
             color: {TEXT_PRIMARY} !important;
             border: 1px solid {BLUE} !important;
         }}
-        .sso-btn button:hover {{ background-color: rgba(47,111,237,0.08) !important; }}
+        .st-key-sso button:hover {{ background-color: rgba(47,111,237,0.08) !important; }}
 
         .divider-row {{ display:flex; align-items:center; gap:12px; margin: 14px 0; }}
         .divider-row hr {{ flex:1; border: none; border-top: 1px solid {BORDER}; margin:0; }}
@@ -130,6 +131,13 @@ def _inject_login_css():
 
         .signup-row {{ text-align: center; font-size: 13px; color: {TEXT_SECONDARY}; margin-top: 18px; }}
         .signup-row a {{ color: {BLUE_LIGHT}; text-decoration: none; }}
+
+        @media (max-width: 900px) {{
+            .topbar {{ margin-bottom: 12px; }}
+            .hero {{ padding: 38px 0 22px; }}
+            .hero h1 {{ font-size: 38px; }}
+            div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:nth-child(2) > div[data-testid="stVerticalBlock"] {{ padding: 26px 22px; }}
+        }}
         </style>
         """,
         unsafe_allow_html=True,
@@ -148,12 +156,7 @@ def render_login_screen():
         f"""
         <div class="topbar">
             <div class="brand">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3z"
-                          fill="rgba(47,111,237,0.15)" stroke="{BLUE_LIGHT}" stroke-width="1.6"/>
-                    <path d="M9 12l2 2 4-4" stroke="{BLUE_LIGHT}" stroke-width="1.6"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                {shield_logo_svg(46)}
                 <div>
                     <div class="brand-name">SecMate</div>
                     <div class="brand-tag">Secure AI. Trust What Runs.</div>
@@ -183,8 +186,6 @@ def render_login_screen():
         )
 
     with col_card:
-        st.markdown('<div class="login-card-wrap">', unsafe_allow_html=True)
-
         st.markdown(
             """
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -204,17 +205,13 @@ def render_login_screen():
 
         st.markdown('<div class="forgot-row"><a href="#">Forgot password?</a></div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="primary-btn">', unsafe_allow_html=True)
         if st.button("Sign In", key="sign_in"):
             _attempt_sign_in(email, password)
-        st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown('<div class="divider-row"><hr><span>or</span><hr></div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="sso-btn">', unsafe_allow_html=True)
         if st.button("🏢  Sign in with SSO", key="sso"):
             st.info("SSO flow not connected yet. (Visual confirmation only.)")
-        st.markdown('</div>', unsafe_allow_html=True)
         st.markdown(
             f'<div style="text-align:center; font-size:11.5px; color:{TEXT_SECONDARY}; margin-top:-6px;">'
             "Recommended for enterprise organizations</div>",
@@ -226,7 +223,6 @@ def render_login_screen():
             unsafe_allow_html=True,
         )
 
-        st.markdown('</div>', unsafe_allow_html=True)
 
 
 def _attempt_sign_in(email: str, password: str):

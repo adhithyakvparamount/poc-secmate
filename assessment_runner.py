@@ -114,6 +114,14 @@ def run_assessment(config: dict[str, object]) -> dict[str, object]:
         if evaluation["finding"]:
             findings.append(build_finding(index, config["target_name"], exchange))
 
+    error_count = sum(exchange.get("verdict") == "error" for exchange in exchanges)
+    if not exchanges or error_count == len(exchanges):
+        status = "failed"
+    elif error_count:
+        status = "partial"
+    else:
+        status = "complete"
+
     return {
         "run_id": f"RUN-{datetime.now().strftime('%Y%m%d%H%M%S')}",
         "target": config["target_name"],
@@ -121,7 +129,10 @@ def run_assessment(config: dict[str, object]) -> dict[str, object]:
         "environment": config.get("environment", "Staging"),
         "started_at": started_at,
         "completed_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "status": "complete" if exchanges else "failed",
+        "status": status,
+        "config": {key: value for key, value in config.items() if key != "credential"},
+        "test_count": len(exchanges),
+        "error_count": error_count,
         "exchanges": exchanges,
         "findings": findings,
     }

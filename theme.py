@@ -42,14 +42,33 @@ COLORS = {
 }
 
 THEME_PRESETS = {
-    "SecMate Dark": {"canvas": "#090D15", "surface": "#121927", "elevated": "#202A3D", "border": "#5A6A87", "accent": "#A597FF", "accent_dim": "#6657D6", "accent_text": "#FFFFFF", "text_primary": "#F1F5FB", "text_secondary": "#AAB5C8"},
+    "SecMate Dark": {"canvas": "#07101D", "surface": "#0D1929", "elevated": "#13243A", "border": "#263B58", "accent": "#3B9CFF", "accent_dim": "#1473E6", "accent_text": "#FFFFFF", "text_primary": "#F4F8FF", "text_secondary": "#9CB0C9"},
     "Claude Dark": {"canvas": "#171715", "surface": "#23221E", "elevated": "#33312B", "border": "#706B60", "accent": "#F09A79", "accent_dim": "#A9472D", "accent_text": "#FFFFFF", "text_primary": "#FFF9F0", "text_secondary": "#C5BDB0"},
     "ChatGPT Dark": {"canvas": "#151515", "surface": "#212121", "elevated": "#303030", "border": "#6B6B6B", "accent": "#4DDBAE", "accent_dim": "#087A60", "accent_text": "#FFFFFF", "text_primary": "#F5F5F5", "text_secondary": "#BDBDBD"},
-    "Blue Cyber": {"canvas": "#06101D", "surface": "#0D1B2D", "elevated": "#172D49", "border": "#4779A8", "accent": "#70B7FF", "accent_dim": "#2563C7", "accent_text": "#FFFFFF", "text_primary": "#F2F8FF", "text_secondary": "#ADC2DA"},
+    "Blue Cyber": {"canvas": "#06101D", "surface": "#0D1B2D", "elevated": "#142943", "border": "#294766", "accent": "#51A9FF", "accent_dim": "#1677E8", "accent_text": "#FFFFFF", "text_primary": "#F2F8FF", "text_secondary": "#A7BCD3"},
     "White": {"canvas": "#F4F6F9", "surface": "#FFFFFF", "elevated": "#E9EEF5", "border": "#7A889D", "accent": "#2563EB", "accent_dim": "#1D4ED8", "accent_text": "#FFFFFF", "text_primary": "#111827", "text_secondary": "#526176"},
 }
 
 SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"]
+
+
+def shield_logo_svg(size: int = 36, title: str = "SecMate shield") -> str:
+    """Return the angular SecMate shield used across product branding."""
+    return (
+        f'<svg width="{size}" height="{size}" viewBox="0 0 64 72" fill="none" '
+        f'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="{escape(title)}">'
+        '<defs><linearGradient id="shieldStroke" x1="8" y1="4" x2="54" y2="66" gradientUnits="userSpaceOnUse">'
+        '<stop stop-color="#58B8FF"/><stop offset="1" stop-color="#0878F9"/></linearGradient>'
+        '<linearGradient id="shieldFill" x1="18" y1="14" x2="47" y2="57" gradientUnits="userSpaceOnUse">'
+        '<stop stop-color="#123D72" stop-opacity="0.9"/><stop offset="1" stop-color="#06254B" stop-opacity="0.35"/>'
+        '</linearGradient></defs>'
+        '<path d="M32 4L56 13V31C56 47.5 46.1 60.7 32 68C17.9 60.7 8 47.5 8 31V13L32 4Z" '
+        'fill="url(#shieldFill)" stroke="url(#shieldStroke)" stroke-width="5" stroke-linejoin="round"/>'
+        '<path d="M32 14L46.5 19.4V31C46.5 42 40.8 51.4 32 57C23.2 51.4 17.5 42 17.5 31V19.4L32 14Z" '
+        'stroke="#1594FF" stroke-width="4" stroke-linejoin="round" opacity="0.95"/>'
+        '<path d="M32 14V57C40.8 51.4 46.5 42 46.5 31V19.4L32 14Z" fill="#0A86FF" fill-opacity="0.22"/>'
+        '</svg>'
+    )
 
 
 def get_active_colors():
@@ -81,7 +100,9 @@ def apply_theme():
         }}
 
         .stApp {{
-            background-color: {active['canvas']};
+            background:
+                radial-gradient(900px 520px at 74% -10%, {active['accent']}12, transparent 66%),
+                {active['canvas']};
             color: {active['text_primary']};
         }}
         .block-container {{
@@ -139,12 +160,10 @@ def apply_theme():
             margin: 42px 16px 8px 16px;
         }}
         .sidebar-brand .mark {{
-            width: 28px; height: 28px;
-            border-radius: 6px;
-            background: linear-gradient(135deg, {active['accent']}, {active['accent_dim']});
+            width: 34px; height: 38px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; color: {active['accent_text']}; font-size: 14px;
         }}
+        .sidebar-brand .mark svg {{ width: 34px; height: 38px; filter: drop-shadow(0 0 12px {active['accent']}35); }}
         .sidebar-brand .name {{
             font-weight: 600; font-size: 15px; color: {active['text_primary']};
             letter-spacing: 0.2px;
@@ -290,6 +309,7 @@ def apply_theme():
         .pill-complete {{ background: {active['accent']}26; color: {active['accent']}; }}
         .pill-running  {{ background: rgba(74,158,255,0.18); color: {active['low']}; }}
         .pill-failed   {{ background: rgba(240,68,82,0.18); color: {active['critical']}; }}
+        .pill-partial  {{ background: rgba(245,197,66,0.18); color: {active['medium']}; }}
         .pill-pending  {{ background: {active['elevated']}; color: {active['text_secondary']}; }}
 
         /* ---- Findings row (severity edge bar) ---- */
@@ -340,8 +360,40 @@ def apply_theme():
 
         /* ---- Section headers ---- */
         .section-title {{
-            font-size: 15px; font-weight: 600; color: {active['text_primary']};
+            font-size: 15px; font-weight: 700; color: {active['text_primary']};
             margin-bottom: 10px;
+        }}
+
+        .page-kicker {{
+            color: {active['accent']};
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }}
+        .page-title {{
+            color: {active['text_primary']};
+            font-size: 28px;
+            font-weight: 750;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+        }}
+        .page-subtitle {{
+            color: {active['text_secondary']};
+            font-size: 13.5px;
+            line-height: 1.55;
+            margin-top: 7px;
+            margin-bottom: 22px;
+        }}
+        .demo-banner {{
+            border: 1px solid {active['medium']}66;
+            background: {active['medium']}12;
+            color: {active['text_secondary']};
+            border-radius: 10px;
+            padding: 10px 13px;
+            font-size: 12.5px;
+            margin-bottom: 16px;
         }}
 
         /* ---- Theme-aware text and controls ---- */
@@ -511,7 +563,7 @@ def sidebar_brand():
     st.sidebar.markdown(
         f"""
         <div class="sidebar-brand">
-            <div class="mark">SM</div>
+            <div class="mark">{shield_logo_svg(34)}</div>
             <div>
                 <div class="name">SecMate</div>
                 <div class="tag">AI Security Assessment</div>

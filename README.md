@@ -13,8 +13,10 @@ The detailed source of truth for this branch is [Documents/TRD(A).md](Documents/
 - Predefined adversarial prompt execution.
 - Basic response extraction and deterministic evaluation.
 - In-session Red/Blue exchange and VAPT finding views.
+- Assessment-driven risk dashboard, evidence filtering, and executive report preview.
+- Evidence-guided AI attack-path visualization.
 
-This is not yet a production security platform. Authentication, dashboard metrics, reports, integrations, settings, and profile persistence are mock or partial. Assessment results are stored only in Streamlit session state.
+This is not yet a production security platform. Authentication, integrations, settings, and profile persistence are mock or partial. Dashboard metrics, reports, attack paths, and findings are derived from assessment results stored only in Streamlit session state.
 
 ## Project Structure
 
@@ -33,6 +35,7 @@ secmate_ui/
     |-- 1_New_Assessment.py
     |-- 2_Red_Blue_Team.py
     |-- 3_VAPT_Findings.py
+    |-- 4_Attack_Paths.py
     |-- 4_Reports.py
     |-- 5_Integrations.py
     |-- 6_Settings.py
