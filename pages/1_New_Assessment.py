@@ -11,6 +11,7 @@ import streamlit as st
 from theme import add_notification, apply_theme, sidebar_brand, get_active_colors, notification_center, status_pill, logout_button
 from authcheck import require_auth
 from assessment_runner import run_assessment
+from workspace import option_label, t
 
 st.set_page_config(page_title="SecMate — New Assessment", layout="wide")
 require_auth()
@@ -20,10 +21,10 @@ sidebar_brand()
 logout_button()
 notification_center()
 
-st.markdown("### New Assessment")
+st.markdown(f"### {t('new_assessment')}")
 st.markdown(
     f"<div style='color:{COLORS['text_secondary']}; font-size:13.5px; margin-top:-8px; margin-bottom:20px;'>"
-    "Configure a target and launch a Red Team, Blue Team, or full VAPT run.</div>",
+    f"{t('new_assessment_subtitle')}</div>",
     unsafe_allow_html=True,
 )
 
@@ -85,6 +86,7 @@ with col_form:
                 "modules": modules,
                 "iterations": iterations,
                 "categories": categories,
+                "environment": st.session_state.get("workspace_environment", "Staging"),
             }
             with st.spinner("Running red-team assessment against target endpoint..."):
                 result = run_assessment(config)
@@ -125,6 +127,8 @@ with col_preview:
             <div style="font-size:13px; line-height:2;">
                 <div><span style="color:{COLORS['text_secondary']};">Target:</span>
                     <span style="font-family:'JetBrains Mono',monospace;">{target_name or "—"}</span></div>
+                <div><span style="color:{COLORS['text_secondary']};">{t('environment')}:</span>
+                    <span style="font-family:'JetBrains Mono',monospace;">{option_label(st.session_state.get('workspace_environment', 'Staging'))}</span></div>
                 <div><span style="color:{COLORS['text_secondary']};">Endpoint:</span>
                     <span style="font-family:'JetBrains Mono',monospace; font-size:12px;">{target_endpoint or "—"}</span></div>
                 <div><span style="color:{COLORS['text_secondary']};">Model:</span>

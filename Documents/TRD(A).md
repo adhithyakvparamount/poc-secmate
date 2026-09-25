@@ -3,7 +3,7 @@
 - **Document type:** As-built technical requirements and engineering knowledge base
 - **Branch:** `adhithya`
 - **Application:** SecMate Streamlit UI and assessment proof of concept
-**Last reviewed against commit:** `6396234d9bb8b2c4229cc8a2b5e250b9e4ccb2a6`
+- **Last reviewed:** September 25, 2026
 
 [Return to the project README](../README.md)
 
@@ -38,6 +38,7 @@ SecMate is a Streamlit application for configuring and running basic adversarial
 The current application supports:
 
 - Mock sign-in and first-run onboarding.
+- Session-backed language, environment, dashboard density, and per-email onboarding profiles.
 - A multi-page security dashboard.
 - Configuration of an HTTP target and request credential.
 - Selection of adversarial prompt categories.
@@ -56,6 +57,7 @@ secmate_ui/
 |-- authcheck.py
 |-- login_screen.py
 |-- theme.py
+|-- workspace.py
 |-- requirements.txt
 |-- README.md
 |-- Documents/
@@ -169,6 +171,10 @@ Provides the sign-in presentation and `_attempt_sign_in()` behavior. Authenticat
 
 Contains shared color definitions, theme presets, global CSS, sidebar branding, status helpers, metric cards, severity badges, and logout behavior.
 
+#### `workspace.py`
+
+Defines the session-backed workspace model, translations, stable option values, per-email onboarding profiles, and preference load/save helpers. Language changes primary shell text, environment is attached to assessment runs, and dashboard density changes shared spacing and card padding.
+
 ## 5. User Journey
 
 ### 5.1 Sign-in
@@ -178,9 +184,9 @@ The user selects an organization and enters an email and password. The current i
 Successful sign-in initializes:
 
 - `authenticated = True`
-- `onboarding_seen = False`
-- `onboarding_loading = True`
 - `user_email = <entered email>`
+
+If the email has a completed onboarding profile in the current session, the application restores its language, environment, density, user type, use case, and goal and skips onboarding. Otherwise, onboarding is shown.
 
 The organization selector is visual only, and SSO is not connected.
 
@@ -191,8 +197,11 @@ After sign-in, the application displays a loading transition and an onboarding p
 - User type.
 - Intended SecMate use case.
 - Optional free-text goal.
+- Language.
+- Workspace environment.
+- Dashboard density.
 
-Selecting **Enter Dashboard** sets `onboarding_seen = True` for the current Streamlit session.
+Selecting **Enter Dashboard** stores these values in a per-email session profile and sets `onboarding_seen = True`. The profile is restored when the same email signs in again during the same Streamlit session.
 
 ### 5.3 Dashboard
 
@@ -215,21 +224,21 @@ The New Assessment page collects target, credential, model, module, and attack-c
 
 The Red/Blue Team and VAPT Findings pages read the latest in-session assessment history. If no usable assessment data exists, these pages can display sample data.
 
-Reports, integrations, settings, and profile surfaces are primarily visual and do not yet provide production persistence or external integration behavior.
+Reports, integrations, and profile surfaces remain primarily visual. Workspace and onboarding settings now apply within session state, but no preference survives a Streamlit process restart and no external integration behavior is implemented.
 
 ## 6. Product Surfaces
 
 | Surface | Current behavior | Status |
 |---|---|---|
 | Login | Accepts any nonempty email and password | Mock |
-| Onboarding | Stores user type, use case, and goal in session state | Implemented locally |
+| Onboarding | Stores user type, use case, goal, language, environment, and density in a per-email session profile | Implemented locally |
 | Dashboard | Shows static metrics, chart, and run history | Mock data |
 | New Assessment | Runs synchronous HTTP adversarial probes | Proof of concept |
 | Red/Blue Team | Shows generated exchanges or sample data | Partial |
 | VAPT Findings | Shows generated findings or sample data | Partial |
 | Reports | Shows a static report list | Mock |
 | Integrations | Shows integration cards | Mock |
-| Settings | Shows controls without durable persistence | Mock |
+| Settings | Applies theme, language, environment, density, motion, and onboarding-profile changes in session state | Partial |
 | Profile | Shows profile controls without durable persistence | Mock |
 
 Settings and Profile are hidden from Streamlit's default navigation through CSS but remain available to authenticated sessions and through account controls.
@@ -391,6 +400,7 @@ There is no persistent application database or audit store.
 | Authentication status | `st.session_state` |
 | User email and profile values | `st.session_state` and widget state |
 | Onboarding values | `st.session_state` |
+| Workspace preferences | `st.session_state` and a per-email session profile |
 | Latest assessment | `st.session_state.latest_assessment` |
 | Assessment history | `st.session_state.assessment_history` |
 | Dashboard metrics | Hardcoded in source |
@@ -410,7 +420,7 @@ Current authentication is a UI gate, not a production security control.
 - No identity provider, token validation, secure cookie model, or server-side user store exists.
 - The authorization checkbox records user confirmation but does not technically prove ownership or permission to test an endpoint.
 
-Logout clears authentication and onboarding flags but does not clear all assessment, identity, preference, or widget state. A later login in the same session may retain previous data.
+Logout clears authentication and notification state but intentionally retains per-email workspace profiles in the current Streamlit session. Signing in again with the same email restores onboarding and workspace preferences. Assessment and other session data may also remain until the Streamlit session ends.
 
 ## 14. Security Considerations
 

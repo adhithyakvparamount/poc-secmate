@@ -7,6 +7,7 @@ The detailed source of truth for this branch is [Documents/TRD(A).md](Documents/
 ## Current Capabilities
 
 - Mock sign-in and first-run onboarding.
+- Session-backed language, environment, density, and onboarding preferences.
 - Multipage Streamlit dashboard and assessment workflow.
 - HTTP target, authentication, and attack-category configuration.
 - Predefined adversarial prompt execution.
@@ -24,6 +25,7 @@ secmate_ui/
 |-- login_screen.py              # Mock sign-in interface
 |-- authcheck.py                 # Page-level session guard
 |-- theme.py                     # Shared styles and UI helpers
+|-- workspace.py                 # Preferences, onboarding profiles, and localization
 |-- requirements.txt
 |-- Documents/
 |   `-- TRD(A).md                # As-built technical source of truth

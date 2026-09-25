@@ -9,6 +9,7 @@ credential storage and third-party APIs before production use.
 import streamlit as st
 from theme import apply_theme, sidebar_brand, get_active_colors, notification_center, status_pill, logout_button
 from authcheck import require_auth
+from workspace import t
 
 st.set_page_config(page_title="SecMate — Integrations", layout="wide")
 require_auth()
@@ -18,10 +19,10 @@ sidebar_brand()
 logout_button()
 notification_center()
 
-st.markdown("### Integrations")
+st.markdown(f"### {t('integrations')}")
 st.markdown(
     f"<div style='color:{COLORS['text_secondary']}; font-size:13.5px; margin-top:-8px; margin-bottom:20px;'>"
-    "Connect SecMate with your issue trackers, SIEM, cloud, and reporting workflows.</div>",
+    f"{t('integrations_subtitle')}</div>",
     unsafe_allow_html=True,
 )
 

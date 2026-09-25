@@ -12,6 +12,7 @@ import streamlit as st
 from html import escape
 from theme import apply_theme, sidebar_brand, get_active_colors, notification_center, severity_badge, logout_button
 from authcheck import require_auth
+from workspace import t
 
 st.set_page_config(page_title="SecMate — Red / Blue Team", layout="wide")
 require_auth()
@@ -21,10 +22,10 @@ sidebar_brand()
 logout_button()
 notification_center()
 
-st.markdown("### Red Team & Blue Team Results")
+st.markdown(f"### {t('results_title')}")
 st.markdown(
     f"<div style='color:{COLORS['text_secondary']}; font-size:13.5px; margin-top:-8px; margin-bottom:20px;'>"
-    "Adversarial prompts and the corresponding target model evaluations for the selected run.</div>",
+    f"{t('results_subtitle')}</div>",
     unsafe_allow_html=True,
 )
 

@@ -24,8 +24,10 @@ import time
 
 from theme import apply_theme, sidebar_brand, get_active_colors, metric_card, notification_center, status_pill, logout_button
 from login_screen import render_login_screen
+from workspace import DENSITIES, ENVIRONMENTS, LANGUAGES, USER_TYPES, USE_CASES, initialize_workspace_state, option_label, save_workspace_profile, t
 
 st.set_page_config(page_title="SecMate", layout="wide", initial_sidebar_state="expanded")
+initialize_workspace_state()
 COLORS = get_active_colors()
 
 if "authenticated" not in st.session_state:
@@ -38,10 +40,10 @@ if not st.session_state.authenticated:
 
 def get_onboarding_steps():
     return [
-        {"label": "Connect your target", "description": "Add the AI agent endpoint and the auth method SecMate should use."},
-        {"label": "Pick security coverage", "description": "Choose Red Team, Blue Team, and VAPT checks for your first run."},
-        {"label": "Review live findings", "description": "Track severity, exploit evidence, and guardrail behavior in one view."},
-        {"label": "Export the report", "description": "Generate a stakeholder-ready report after validation is complete."},
+        {"label": t("step_connect"), "description": t("step_connect_desc")},
+        {"label": t("step_coverage"), "description": t("step_coverage_desc")},
+        {"label": t("step_findings"), "description": t("step_findings_desc")},
+        {"label": t("step_report"), "description": t("step_report_desc")},
     ]
 
 
@@ -69,8 +71,8 @@ def render_onboarding_loading():
         .loading-sub {{ text-align:center; color:{COLORS['text_secondary']}; font-size:13px; margin-top:8px; }}
         </style>
         <div class="scale-loader"></div>
-        <div class="loading-title">Preparing your SecMate workspace</div>
-        <div class="loading-sub">Loading onboarding, profile, and assessment defaults.</div>
+        <div class="loading-title">{t('loading_title')}</div>
+        <div class="loading-sub">{t('loading_subtitle')}</div>
         """,
         unsafe_allow_html=True,
     )
@@ -118,9 +120,9 @@ def render_onboarding_page():
         }}
         </style>
         <div class="onboarding-hero">
-            <div class="onboarding-kicker">SECURITY WORKSPACE SETUP</div>
-            <div class="onboarding-title">Set up your first AI security assessment.</div>
-            <div class="onboarding-copy">Before opening the dashboard, SecMate walks you through the core workflow: connect a target, select security coverage, review findings, and export an assessment report.</div>
+            <div class="onboarding-kicker">{t('onboarding_kicker')}</div>
+            <div class="onboarding-title">{t('onboarding_title')}</div>
+            <div class="onboarding-copy">{t('onboarding_copy')}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -142,42 +144,47 @@ def render_onboarding_page():
 
     st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
     with st.container(border=True):
-        st.markdown('<div class="section-title">Tell us about your use case</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="section-title">{t("about_use_case")}</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
             st.selectbox(
-                "Which best describes you?",
-                ["Student", "Engineer", "Working Professional", "Security Analyst", "Founder / Product Owner", "Other"],
+                t("user_type_question"),
+                USER_TYPES,
                 key="onboarding_user_type",
             )
         with c2:
             st.selectbox(
-                "What will you use SecMate for?",
-                [
-                    "Learning AI security",
-                    "Testing an internal AI agent",
-                    "Client security assessments",
-                    "Compliance and audit reports",
-                    "Research and experimentation",
-                    "Production monitoring",
-                ],
+                t("use_case_question"),
+                USE_CASES,
                 key="onboarding_use_case",
             )
         st.text_area(
-            "Anything specific you want SecMate to help with?",
-            placeholder="Example: test prompt injection risks before deploying a customer support bot.",
+            t("goal_question"),
+            placeholder=t("goal_placeholder"),
             key="onboarding_goal",
         )
+
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown(f'<div class="section-title">{t("workspace_preferences")}</div>', unsafe_allow_html=True)
+        p1, p2, p3 = st.columns(3)
+        with p1:
+            st.selectbox(t("language"), LANGUAGES, key="language_pref")
+        with p2:
+            st.selectbox(t("environment"), ENVIRONMENTS, key="workspace_environment")
+        with p3:
+            st.selectbox(t("dashboard_density"), DENSITIES, key="dashboard_density")
 
     st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
     c1, c2 = st.columns([0.22, 1])
     with c1:
-        if st.button("Enter Dashboard", use_container_width=True):
+        if st.button(t("enter_dashboard"), use_container_width=True):
+            save_workspace_profile()
             st.session_state.onboarding_seen = True
             st.rerun()
     with c2:
         st.markdown(
-            f"<div style='color:{COLORS['text_secondary']}; font-size:12.5px; padding-top:9px;'>You can change theme, profile, and assessment defaults from the account settings later.</div>",
+            f"<div style='color:{COLORS['text_secondary']}; font-size:12.5px; padding-top:9px;'>{t('preferences_hint')}</div>",
             unsafe_allow_html=True,
         )
 
@@ -192,11 +199,6 @@ if not st.session_state.get("onboarding_seen", False):
     st.stop()
 
 sidebar_brand()
-
-# Optional: environment/target context selector, purely visual here
-st.sidebar.markdown("<div style='padding:0 16px;'>", unsafe_allow_html=True)
-st.sidebar.selectbox("Environment", ["Staging", "Production", "Local"], key="env_select")
-st.sidebar.markdown("</div>", unsafe_allow_html=True)
 logout_button()
 notification_center()
 
@@ -227,16 +229,17 @@ def get_recent_runs():
 
 
 def render_dashboard_header():
-    user_type = st.session_state.get("onboarding_user_type", "Security Analyst")
-    use_case = st.session_state.get("onboarding_use_case", "Testing an internal AI agent")
+    user_type = option_label(st.session_state.get("onboarding_user_type", "Security Analyst"))
+    use_case = option_label(st.session_state.get("onboarding_use_case", "Testing an internal AI agent"))
+    environment = option_label(st.session_state.get("workspace_environment", "Staging"))
     unread_count = sum(bool(item.get("unread")) for item in st.session_state.get("notifications", []))
     st.markdown(
         f"""
         <div style="display:flex; justify-content:space-between; gap:18px; align-items:center; margin-bottom:20px;">
             <div>
-                <div style="color:{COLORS['text_secondary']}; font-family:'JetBrains Mono',monospace; font-size:12px; margin-bottom:5px;">{user_type} workspace</div>
-                <div style="color:{COLORS['text_primary']}; font-size:26px; font-weight:750; letter-spacing:-0.02em;">Dashboard</div>
-                <div style="color:{COLORS['text_secondary']}; font-size:13px; margin-top:4px;">Optimized for: {use_case}</div>
+                <div style="color:{COLORS['text_secondary']}; font-family:'JetBrains Mono',monospace; font-size:12px; margin-bottom:5px;">{user_type} {t('workspace')} · {environment}</div>
+                <div style="color:{COLORS['text_primary']}; font-size:26px; font-weight:750; letter-spacing:-0.02em;">{t('dashboard')}</div>
+                <div style="color:{COLORS['text_secondary']}; font-size:13px; margin-top:4px;">{t('optimized_for')}: {use_case}</div>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
                 <div style="border:1px solid {COLORS['border']}; background:{COLORS['surface']}; border-radius:10px; padding:9px 12px; min-width:260px; color:{COLORS['text_secondary']}; font-size:13px;">
@@ -250,11 +253,11 @@ def render_dashboard_header():
 
     action_col, status_col = st.columns([0.17, 1])
     with action_col:
-        if st.button("New Assessment", use_container_width=True):
+        if st.button(t("new_assessment"), use_container_width=True):
             st.switch_page("pages/1_New_Assessment.py")
     with status_col:
         st.markdown(
-            f"<div style='color:{COLORS['text_secondary']}; font-size:12.5px; padding-top:8px;'>Workspace health: <span style='color:{COLORS['accent']};'>ready</span> · {unread_count} unread notifications</div>",
+            f"<div style='color:{COLORS['text_secondary']}; font-size:12.5px; padding-top:8px;'>{t('workspace_health')}: <span style='color:{COLORS['accent']};'>{t('ready')}</span> · {t('unread_notifications', count=unread_count)}</div>",
             unsafe_allow_html=True,
         )
 

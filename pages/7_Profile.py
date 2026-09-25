@@ -8,6 +8,7 @@ Profile controls are frontend placeholders and do not persist yet.
 import streamlit as st
 from theme import apply_theme, sidebar_brand, get_active_colors, notification_center, logout_button
 from authcheck import require_auth
+from workspace import t
 
 st.set_page_config(page_title="SecMate — Profile", layout="wide")
 require_auth()
@@ -19,10 +20,10 @@ notification_center()
 
 email = st.session_state.get("user_email", "adhithya@example.com")
 
-st.markdown("### Profile")
+st.markdown(f"### {t('profile')}")
 st.markdown(
     f"<div style='color:{COLORS['text_secondary']}; font-size:13.5px; margin-top:-8px; margin-bottom:20px;'>"
-    "Manage your SecMate identity, workspace role, and recent account activity.</div>",
+    f"{t('profile_subtitle')}</div>",
     unsafe_allow_html=True,
 )
 

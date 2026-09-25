@@ -10,6 +10,7 @@ import streamlit as st
 from html import escape
 from theme import apply_theme, sidebar_brand, get_active_colors, notification_center, SEVERITY_ORDER, logout_button
 from authcheck import require_auth
+from workspace import t
 
 st.set_page_config(page_title="SecMate — VAPT Findings", layout="wide")
 require_auth()
@@ -19,10 +20,10 @@ sidebar_brand()
 logout_button()
 notification_center()
 
-st.markdown("### VAPT Findings")
+st.markdown(f"### {t('findings_title')}")
 st.markdown(
     f"<div style='color:{COLORS['text_secondary']}; font-size:13.5px; margin-top:-8px; margin-bottom:20px;'>"
-    "Rule-based evidence analysis results across all completed assessments.</div>",
+    f"{t('findings_subtitle')}</div>",
     unsafe_allow_html=True,
 )
 

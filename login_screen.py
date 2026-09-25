@@ -15,6 +15,8 @@ accent from theme.py.
 
 import streamlit as st
 
+from workspace import initialize_workspace_state, load_workspace_profile
+
 BLUE = "#2F6FED"
 BLUE_LIGHT = "#4C8DFF"
 CANVAS = "#070E1F"
@@ -235,8 +237,19 @@ def _attempt_sign_in(email: str, password: str):
     if not email or not password:
         st.error("Enter your work email and password.")
         return
+    initialize_workspace_state()
     st.session_state.authenticated = True
-    st.session_state.onboarding_seen = False
-    st.session_state.onboarding_loading = True
     st.session_state.user_email = email
+    st.session_state.onboarding_seen = load_workspace_profile(email)
+    if not st.session_state.onboarding_seen:
+        st.session_state.language_pref = "English"
+        st.session_state.workspace_environment = "Staging"
+        st.session_state.dashboard_density = "Comfortable"
+        st.session_state.dashboard_theme = "SecMate Dark"
+        st.session_state.reduced_motion = False
+        st.session_state.onboarding_user_type = "Security Analyst"
+        st.session_state.onboarding_use_case = "Testing an internal AI agent"
+        st.session_state.onboarding_goal = ""
+    st.session_state.sync_sidebar_preferences = True
+    st.session_state.onboarding_loading = not st.session_state.onboarding_seen
     st.rerun()

@@ -18,6 +18,8 @@ from html import escape
 
 import streamlit as st
 
+from workspace import DENSITIES, ENVIRONMENTS, LANGUAGES, initialize_workspace_state, option_label, persist_workspace_preferences, t
+
 # ---------------------------------------------------------------------------
 # Color tokens
 # ---------------------------------------------------------------------------
@@ -52,6 +54,7 @@ SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"]
 
 def get_active_colors():
     """Return the palette selected for the current Streamlit session."""
+    initialize_workspace_state()
     theme_name = st.session_state.get("dashboard_theme", "SecMate Dark")
     return {**COLORS, **THEME_PRESETS.get(theme_name, THEME_PRESETS["SecMate Dark"])}
 
@@ -61,6 +64,12 @@ def apply_theme():
     theme_name = st.session_state.get("dashboard_theme", "SecMate Dark")
     active = get_active_colors()
     color_scheme = "light" if theme_name == "White" else "dark"
+    density = st.session_state.get("dashboard_density", "Comfortable")
+    density_tokens = {
+        "Compact": {"page_top": "1.4rem", "page_x": "2rem", "gap": "0.55rem", "card_padding": "12px 14px"},
+        "Comfortable": {"page_top": "2.2rem", "page_x": "3rem", "gap": "0.85rem", "card_padding": "16px 18px"},
+        "Spacious": {"page_top": "3rem", "page_x": "4rem", "gap": "1.2rem", "card_padding": "22px 24px"},
+    }[density]
     st.markdown(
         f"""
         <style>
@@ -75,6 +84,12 @@ def apply_theme():
             background-color: {active['canvas']};
             color: {active['text_primary']};
         }}
+        .block-container {{
+            padding-top: {density_tokens['page_top']};
+            padding-left: {density_tokens['page_x']};
+            padding-right: {density_tokens['page_x']};
+        }}
+        [data-testid="stVerticalBlock"] {{ gap: {density_tokens['gap']}; }}
 
         /* ---- Sidebar ---- */
         section[data-testid="stSidebar"] {{
@@ -227,6 +242,7 @@ def apply_theme():
             background-color: {active['surface']};
             border: 1px solid {active['border']} !important;
             border-radius: 10px;
+            padding: {density_tokens['card_padding']};
         }}
 
         /* ---- Metric cards ---- */
@@ -234,7 +250,7 @@ def apply_theme():
             background-color: {active['surface']};
             border: 1px solid {active['border']};
             border-radius: 10px;
-            padding: 16px 18px;
+            padding: {density_tokens['card_padding']};
         }}
         .metric-card .label {{
             font-size: 12.5px; color: {active['text_secondary']};
@@ -420,6 +436,8 @@ def apply_theme():
             border-color: {active['border']};
         }}
 
+        {'* { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }' if st.session_state.get('reduced_motion') else ''}
+
         /* ---- Notification center ---- */
         [data-testid="stPopover"] > button {{
             background: {active['surface']} !important;
@@ -469,6 +487,24 @@ def apply_theme():
 
 def sidebar_brand():
     """Render the SecMate brand and account block in the sidebar."""
+    initialize_workspace_state()
+    sidebar_keys = {
+        "sidebar_environment": "workspace_environment",
+        "sidebar_theme": "dashboard_theme",
+        "sidebar_language": "language_pref",
+        "sidebar_density": "dashboard_density",
+        "sidebar_reduced_motion": "reduced_motion",
+    }
+    if st.session_state.pop("sync_sidebar_preferences", False):
+        for widget_key, preference_key in sidebar_keys.items():
+            st.session_state[widget_key] = st.session_state.get(preference_key)
+    for widget_key, preference_key in sidebar_keys.items():
+        st.session_state.setdefault(widget_key, st.session_state.get(preference_key))
+
+    def apply_sidebar_preference(widget_key: str, preference_key: str):
+        st.session_state[preference_key] = st.session_state[widget_key]
+        persist_workspace_preferences()
+
     user_email = st.session_state.get("user_email", "adhithya@example.com")
     display_name = st.session_state.get("display_name", "Adhithya K V")
     plan_name = st.session_state.get("plan_name", "Free")
@@ -494,28 +530,61 @@ def sidebar_brand():
         unsafe_allow_html=True,
     )
 
-    with st.sidebar.popover("Profile", use_container_width=True):
+    st.sidebar.selectbox(
+        t("environment"),
+        ENVIRONMENTS,
+        key="sidebar_environment",
+        format_func=option_label,
+        on_change=apply_sidebar_preference,
+        args=("sidebar_environment", "workspace_environment"),
+    )
+
+    with st.sidebar.popover(t("profile"), use_container_width=True):
         st.markdown(f"**{display_name}**")
         st.caption(user_email)
-        st.markdown(f"Plan: **{plan_name}**")
-        plan = st.radio("Account type", ["Free", "Paid"], index=0 if plan_name == "Free" else 1, horizontal=True)
+        st.markdown(f"{t('plan')}: **{plan_name}**")
+        plan = st.radio(t("account_type"), ["Free", "Paid"], index=0 if plan_name == "Free" else 1, horizontal=True)
         st.session_state.plan_name = plan
-        st.text_input("Name", value=display_name, key="display_name")
+        st.text_input(t("name"), value=display_name, key="display_name")
         st.caption("Profile changes are visual only in this mockup.")
 
-    with st.sidebar.popover("Settings", use_container_width=True):
-        st.markdown("**Settings**")
+    with st.sidebar.popover(t("settings"), use_container_width=True):
+        st.markdown(f"**{t('settings')}**")
         theme_names = list(THEME_PRESETS.keys())
-        current_theme = st.session_state.get("dashboard_theme", "SecMate Dark")
-        st.selectbox("Dashboard theme", theme_names, index=theme_names.index(current_theme), key="dashboard_theme")
-        st.selectbox("Language", ["English", "Hindi", "Arabic", "French"], key="language_pref")
-        st.selectbox("Dashboard density", ["Comfortable", "Compact", "Spacious"], key="dashboard_density")
-        st.toggle("Reduced motion", key="reduced_motion")
+        st.selectbox(
+            "Dashboard theme",
+            theme_names,
+            key="sidebar_theme",
+            on_change=apply_sidebar_preference,
+            args=("sidebar_theme", "dashboard_theme"),
+        )
+        st.selectbox(
+            t("language"),
+            LANGUAGES,
+            key="sidebar_language",
+            on_change=apply_sidebar_preference,
+            args=("sidebar_language", "language_pref"),
+        )
+        st.selectbox(
+            t("dashboard_density"),
+            DENSITIES,
+            key="sidebar_density",
+            format_func=option_label,
+            on_change=apply_sidebar_preference,
+            args=("sidebar_density", "dashboard_density"),
+        )
+        st.toggle(
+            t("reduced_motion"),
+            key="sidebar_reduced_motion",
+            on_change=apply_sidebar_preference,
+            args=("sidebar_reduced_motion", "reduced_motion"),
+        )
         st.divider()
         st.button("Upgrade plan", use_container_width=True)
         st.button("Get apps and extensions", use_container_width=True)
         st.button("Learn more", use_container_width=True)
         st.button("Get help", use_container_width=True)
+    persist_workspace_preferences()
 
 
 def add_notification(title: str, message: str, level: str = "info", notification_id: str | None = None):
@@ -542,8 +611,8 @@ def notification_center():
     """Render the session notification popover at the top-right of a page."""
     if not st.session_state.get("notification_center_initialized"):
         add_notification(
-            "Notification center ready",
-            "Assessment completions and new findings will appear here.",
+            t("notification_ready_title"),
+            t("notification_ready_message"),
             notification_id="notification-center-ready",
         )
         st.session_state.notification_center_initialized = True
@@ -552,16 +621,16 @@ def notification_center():
     unread_count = sum(bool(item.get("unread")) for item in notifications)
     _, notification_col = st.columns([0.82, 0.18])
     with notification_col:
-        label = f"Notifications ({unread_count})" if unread_count else "Notifications"
+        label = f"{t('notifications')} ({unread_count})" if unread_count else t("notifications")
         with st.popover(
             label,
             icon=":material/notifications:",
             width="stretch",
             key="notification_center_popover",
         ):
-            st.markdown("#### Notifications")
+            st.markdown(f"#### {t('notifications')}")
             if not notifications:
-                st.caption("No notifications yet.")
+                st.caption(t("no_notifications"))
             else:
                 level_colors = {
                     "critical": COLORS["critical"],
@@ -570,7 +639,7 @@ def notification_center():
                     "info": COLORS["low"],
                 }
                 for item in notifications:
-                    unread_marker = "New - " if item.get("unread") else ""
+                    unread_marker = f"{t('new')} - " if item.get("unread") else ""
                     color = level_colors.get(str(item.get("level")), COLORS["info"])
                     st.markdown(
                         f"""
@@ -585,12 +654,12 @@ def notification_center():
 
                 mark_col, clear_col = st.columns(2)
                 with mark_col:
-                    if st.button("Mark all read", use_container_width=True, key="notifications_mark_read"):
+                    if st.button(t("mark_all_read"), use_container_width=True, key="notifications_mark_read"):
                         for item in notifications:
                             item["unread"] = False
                         st.rerun()
                 with clear_col:
-                    if st.button("Clear", use_container_width=True, key="notifications_clear"):
+                    if st.button(t("clear"), use_container_width=True, key="notifications_clear"):
                         st.session_state.notifications = []
                         st.rerun()
 

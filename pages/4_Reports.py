@@ -9,6 +9,7 @@ your existing backend's report-generation function and file output.
 import streamlit as st
 from theme import apply_theme, sidebar_brand, get_active_colors, notification_center, logout_button
 from authcheck import require_auth
+from workspace import t
 
 st.set_page_config(page_title="SecMate — Reports", layout="wide")
 require_auth()
@@ -18,10 +19,10 @@ sidebar_brand()
 logout_button()
 notification_center()
 
-st.markdown("### Reports")
+st.markdown(f"### {t('reports')}")
 st.markdown(
     f"<div style='color:{COLORS['text_secondary']}; font-size:13.5px; margin-top:-8px; margin-bottom:20px;'>"
-    "Generate and download assessment reports for stakeholders and audit trails.</div>",
+    f"{t('reports_subtitle')}</div>",
     unsafe_allow_html=True,
 )
 

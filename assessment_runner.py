@@ -118,6 +118,7 @@ def run_assessment(config: dict[str, object]) -> dict[str, object]:
         "run_id": f"RUN-{datetime.now().strftime('%Y%m%d%H%M%S')}",
         "target": config["target_name"],
         "endpoint": config["target_endpoint"],
+        "environment": config.get("environment", "Staging"),
         "started_at": started_at,
         "completed_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "status": "complete" if exchanges else "failed",
