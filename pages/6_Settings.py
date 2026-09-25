@@ -32,7 +32,7 @@ with st.container(border=True):
     with c2:
         st.selectbox("Dashboard density", ["Comfortable", "Compact", "Spacious"])
     with c3:
-        st.selectbox("Accent color", ["Teal", "Blue", "Purple", "Green"])
+        st.selectbox("Accent color", ["Purple", "Blue", "Teal", "Green"])
     st.toggle("Use reduced motion", value=False)
 
 st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)

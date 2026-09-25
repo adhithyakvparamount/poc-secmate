@@ -58,7 +58,7 @@ def render_onboarding_loading():
             border-radius: 22px;
             background: linear-gradient(135deg, {COLORS['accent']}, {COLORS['low']});
             animation: scalePulse 1.05s ease-in-out infinite;
-            box-shadow: 0 0 42px rgba(0,217,163,0.28);
+            box-shadow: 0 0 42px rgba(139,124,246,0.28);
         }}
         @keyframes scalePulse {{
             0%, 100% {{ transform: scale(0.86); opacity: 0.72; }}
@@ -83,7 +83,7 @@ def render_onboarding_page():
         f"""
         <style>
         section[data-testid="stSidebar"] {{ display: none; }}
-        .stApp {{ background: radial-gradient(900px 520px at 28% 10%, rgba(0,217,163,0.11), transparent 62%), {COLORS['canvas']}; }}
+        .stApp {{ background: radial-gradient(900px 520px at 28% 10%, rgba(139,124,246,0.11), transparent 62%), {COLORS['canvas']}; }}
         .block-container {{ max-width: 1120px; padding-top: 3.5rem; }}
         .onboarding-hero {{
             border: 1px solid {COLORS['border']};
@@ -105,7 +105,7 @@ def render_onboarding_page():
             width: 28px;
             height: 28px;
             border-radius: 8px;
-            background: rgba(0,217,163,0.13);
+            background: rgba(139,124,246,0.13);
             color: {COLORS['accent']};
             display: flex;
             align-items: center;
@@ -284,7 +284,7 @@ def render_quick_start_panel():
                 st.markdown(
                     f"""
                     <div style="display:flex; gap:10px; margin-bottom:10px; align-items:flex-start;">
-                        <div style="width:18px; height:18px; border-radius:50%; background:rgba(0,217,163,0.14); color:{COLORS['accent']}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">✓</div>
+                        <div style="width:18px; height:18px; border-radius:50%; background:rgba(139,124,246,0.14); color:{COLORS['accent']}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">✓</div>
                         <div>
                             <div style="color:{COLORS['text_primary']}; font-size:13.5px; font-weight:600;">{title}</div>
                             <div style="color:{COLORS['text_secondary']}; font-size:12.5px; margin-top:2px;">{description}</div>

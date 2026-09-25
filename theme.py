@@ -23,8 +23,8 @@ COLORS = {
     "surface": "#111827",
     "elevated": "#1C2333",
     "border": "#2D3548",
-    "accent": "#00D9A3",
-    "accent_dim": "#0AA37D",
+    "accent": "#8B7CF6",
+    "accent_dim": "#6D5FDB",
     "text_primary": "#E2E8F0",
     "text_secondary": "#8B94A7",
     # Severity scale — reserved for risk indication only, never decoration
@@ -36,7 +36,7 @@ COLORS = {
 }
 
 THEME_PRESETS = {
-    "SecMate Dark": {"canvas": "#0A0E14", "surface": "#111827", "elevated": "#1C2333", "border": "#2D3548", "accent": "#00D9A3", "accent_dim": "#0AA37D", "text_primary": "#E2E8F0", "text_secondary": "#8B94A7"},
+    "SecMate Dark": {"canvas": "#0A0E14", "surface": "#111827", "elevated": "#1C2333", "border": "#2D3548", "accent": "#8B7CF6", "accent_dim": "#6D5FDB", "text_primary": "#E2E8F0", "text_secondary": "#8B94A7"},
     "Claude Dark": {"canvas": "#171717", "surface": "#20201D", "elevated": "#30302C", "border": "#3B3B35", "accent": "#D97757", "accent_dim": "#B85F43", "text_primary": "#F4F1EA", "text_secondary": "#AAA49A"},
     "ChatGPT Dark": {"canvas": "#212121", "surface": "#171717", "elevated": "#2F2F2F", "border": "#3A3A3A", "accent": "#10A37F", "accent_dim": "#0E8F70", "text_primary": "#ECECEC", "text_secondary": "#AFAFAF"},
     "Blue Cyber": {"canvas": "#07111F", "surface": "#0E1B2E", "elevated": "#162A45", "border": "#274463", "accent": "#4A9EFF", "accent_dim": "#2F6FED", "text_primary": "#EAF3FF", "text_secondary": "#93A8C3"},
@@ -96,7 +96,7 @@ def apply_theme():
             color: {COLORS['text_primary']} !important;
         }}
         div[data-testid="stSidebarNav"] a[aria-current="page"] {{
-            background: linear-gradient(90deg, rgba(0,217,163,0.12), {COLORS['elevated']});
+            background: linear-gradient(90deg, rgba(139,124,246,0.12), {COLORS['elevated']});
             color: {COLORS['accent']} !important;
             font-weight: 600;
             border-left: 2px solid {COLORS['accent']};
@@ -259,7 +259,7 @@ def apply_theme():
             font-size: 11.5px;
             font-weight: 500;
         }}
-        .pill-complete {{ background: rgba(0,217,163,0.15); color: {COLORS['accent']}; }}
+        .pill-complete {{ background: rgba(139,124,246,0.15); color: {COLORS['accent']}; }}
         .pill-running  {{ background: rgba(74,158,255,0.15); color: {COLORS['low']}; }}
         .pill-failed   {{ background: rgba(240,68,82,0.15); color: {COLORS['critical']}; }}
         .pill-pending  {{ background: rgba(139,148,167,0.15); color: {COLORS['text_secondary']}; }}
@@ -283,7 +283,7 @@ def apply_theme():
             padding: 12px 14px;
             margin-bottom: 10px;
         }}
-        .transcript-prompt {{ background: rgba(0,217,163,0.06); border-left: 3px solid {COLORS['accent']}; }}
+        .transcript-prompt {{ background: rgba(139,124,246,0.06); border-left: 3px solid {COLORS['accent']}; }}
         .transcript-response {{ background: rgba(74,158,255,0.06); border-left: 3px solid {COLORS['low']}; }}
         .transcript-label {{
             font-size: 11px; text-transform: none; color: {COLORS['text_secondary']};

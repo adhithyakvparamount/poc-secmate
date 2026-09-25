@@ -9,9 +9,8 @@ credentials, look up the organization, etc.) before setting
 st.session_state.authenticated = True.
 
 NOTE ON COLOR: this screen uses a BLUE accent (#2F6FED), matching the
-reference design. The dashboard (app.py / pages/) uses a TEAL accent
-(#00D9A3) from theme.py. Unify these in theme.py if you want one
-consistent accent across the whole product.
+reference design. The default dashboard theme uses an electric-violet
+accent from theme.py.
 """
 
 import streamlit as st
